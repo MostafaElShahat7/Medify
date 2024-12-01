@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Appointment {
+  id             String         @id @default(uuid())
+  patientId      String
+  doctorId       String
+  appointmentDate DateTime
+  status         AppointmentStatus @default(SCHEDULED)
+  reason         String
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  patient        User          @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctor         User          @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  medicalReport  MedicalReport?
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  password        String
+  role            UserRole
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  patientProfile  PatientProfile?
+  doctorProfile   DoctorProfile?
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  sentMessages    Message[]    @relation("SentMessages")
+  receivedMessages Message[]   @relation("ReceivedMessages")
+}
+
+model PatientProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  dateOfBirth     DateTime
+  gender          Gender
+  bloodType       BloodType?
+  allergies       String[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id])
+  medicalHistory  MedicalHistory[]
+  emergencyContact EmergencyContact?
+}
+
+model DoctorProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  specialization  String
+  experienceYears Int
+  rating          Float     @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id])
+  availability    Availability[]
+}
+
+model MedicalReport {
+  id              String    @id @default(uuid())
+  appointmentId   String    @unique
+  diagnosis       String
+  symptoms        String[]
+  notes           String?
+  recommendations String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  appointment     Appointment @relation(fields: [appointmentId], references: [id])
+  attachments     Attachment[]
+  prescriptions   Prescription[]
+}
+
+model Prescription {
+  id              String    @id @default(uuid())
+  reportId        String
+  status          PrescriptionStatus @default(ACTIVE)
+  notes           String?
+  validUntil      DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  medicalReport   MedicalReport @relation(fields: [reportId], references: [id])
+  medications     Medication[]
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  senderId        String
+  receiverId      String
+  content         String
+  read            Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  sender          User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiver        User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  attachments     Attachment[]
+}
+
+model MedicalHistory {
+  id              String    @id @default(uuid())
+  patientId       String
+  condition       String
+  diagnosedDate   DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  patient         PatientProfile @relation(fields: [patientId], references: [id])
+  medications     Medication[]
+}
+
+model Medication {
+  id              String    @id @default(uuid())
+  name            String
+  dosage          String
+  frequency       String
+  duration        String?
+  instructions    String?
+  
+  // Relations
+  prescriptionId  String?
+  prescription    Prescription? @relation(fields: [prescriptionId], references: [id])
+  medicalHistoryId String?
+  medicalHistory  MedicalHistory? @relation(fields: [medicalHistoryId], references: [id])
+}
+
+model Attachment {
+  id              String    @id @default(uuid())
+  filename        String
+  path            String
+  mimetype        String
+  uploadedAt      DateTime  @default(now())
+
+  // Relations
+  messageId       String?
+  message         Message?  @relation(fields: [messageId], references: [id])
+  reportId        String?
+  medicalReport   MedicalReport? @relation(fields: [reportId], references: [id])
+}
+
+model EmergencyContact {
+  id              String    @id @default(uuid())
+  patientId       String    @unique
+  name            String
+  relationship    String?
+  phone           String
+
+  // Relations
+  patient         PatientProfile @relation(fields: [patientId], references: [id])
+}
+
+model Availability {
+  id              String    @id @default(uuid())
+  doctorId        String
+  day             WeekDay
+  startTime       String
+  endTime         String
+
+  // Relations
+  doctor          DoctorProfile @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, day])
+}
+
+enum UserRole {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum PrescriptionStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}

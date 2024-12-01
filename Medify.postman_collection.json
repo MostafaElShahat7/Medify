@@ -1,0 +1,211 @@
+{
+  "info": {
+    "name": "Medify API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"patient\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/appointments",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": \"doctor_id\",\n  \"appointmentDate\": \"2024-01-20T10:00:00Z\",\n  \"reason\": \"Regular checkup\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medical Records",
+      "item": [
+        {
+          "name": "Create Medical Report",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "diagnosis",
+                  "value": "Common cold",
+                  "type": "text"
+                },
+                {
+                  "key": "symptoms",
+                  "value": "[\"fever\", \"cough\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Prescription",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medications\": [\n    {\n      \"name\": \"Paracetamol\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"Every 6 hours\",\n      \"duration\": \"5 days\"\n    }\n  ],\n  \"validUntil\": \"2024-01-25T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"receiver_id\",\n  \"content\": \"Hello, how are you?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Conversations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/messages/conversations",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/patients/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"bloodType\": \"A+\",\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"relationship\": \"Spouse\",\n    \"phone\": \"+1234567890\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/patients/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_token_here"
+    }
+  ]
+}
