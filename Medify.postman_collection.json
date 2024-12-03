@@ -5,6 +5,7 @@
   },
   "item": [
     {
+
       "name": "Auth",
       "item": [
         {
@@ -196,7 +197,121 @@
           }
         }
       ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Doctors",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/doctors",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "specialization": "Cardiology",
+              "rating": "4",
+              "availability": "monday"
+            }
+          }
+        },
+        {
+          "name": "Search Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/appointments",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "status": "scheduled",
+              "startDate": "2024-01-01",
+              "endDate": "2024-12-31"
+            }
+          }
+        },
+        {
+          "name": "Search Medical Records",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/medical-records",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "diagnosis": "flu",
+              "startDate": "2024-01-01",
+              "endDate": "2024-12-31"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/reviews/{{doctorId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent doctor, very professional and caring.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/reviews/doctor/{{doctorId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/reviews/{{reviewId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Updated review: Very good experience overall.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/reviews/{{reviewId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        }
+      ]
     }
+    
   ],
   "variable": [
     {
@@ -208,4 +323,5 @@
       "value": "your_jwt_token_here"
     }
   ]
+  
 }

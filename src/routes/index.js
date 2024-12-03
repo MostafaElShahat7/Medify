@@ -5,6 +5,7 @@ const appointmentRoutes = require('./appointment.routes');
 const medicalRecordsRoutes = require('./medical-records.routes');
 const messageRoutes = require('./message.routes');
 const patientRoutes = require('./patient.routes');
+const doctorRoutes = require('./doctor.routes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -25,5 +26,8 @@ router.use('/messages', messageRoutes);
 
 // Patient routes
 router.use('/patients', patientRoutes);
+
+// Doctor routes
+router.use('/doctors', doctorRoutes);
 
 module.exports = router;
