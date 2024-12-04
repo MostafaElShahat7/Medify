@@ -43,6 +43,147 @@
       ]
     },
     {
+      "name": "Doctor",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/doctors/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "specialization": "Cardiology",
+                "experienceYears": 10,
+                "availability": [
+                  {
+                    "day": "monday",
+                    "startTime": "09:00",
+                    "endTime": "17:00"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctors/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/doctors/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "specialization": "Neurology",
+                "experienceYears": 12
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Availability",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/doctors/availability",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "availability": [
+                  {
+                    "day": "monday",
+                    "startTime": "10:00",
+                    "endTime": "18:00"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/patients/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "dateOfBirth": "1990-01-01",
+                "gender": "male",
+                "bloodType": "A_POSITIVE",
+                "allergies": ["penicillin"],
+                "emergencyContact": {
+                  "name": "Jane Doe",
+                  "relationship": "spouse",
+                  "phone": "+1234567890"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/patients/profile",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Add Medical History",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/patients/medical-history",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "condition": "Hypertension",
+                "diagnosedDate": "2023-01-01",
+                "medications": [
+                  {
+                    "name": "Lisinopril",
+                    "dosage": "10mg",
+                    "frequency": "daily"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Appointments",
       "item": [
         {
@@ -55,11 +196,10 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"doctorId\": \"doctor_id\",\n  \"appointmentDate\": \"2024-01-20T10:00:00Z\",\n  \"reason\": \"Regular checkup\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+              "raw": {
+                "doctorId": "{{doctorId}}",
+                "appointmentDate": "2024-01-15T10:00:00Z",
+                "reason": "Annual checkup"
               }
             }
           }
@@ -71,6 +211,23 @@
             "url": "{{baseUrl}}/api/appointments",
             "headers": {
               "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Update Appointment",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "completed",
+                "notes": "Patient showed improvement"
+              }
             }
           }
         }
@@ -157,40 +314,6 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/api/messages/conversations",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Patient",
-      "item": [
-        {
-          "name": "Create Profile",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/patients/profile",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"bloodType\": \"A+\",\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"relationship\": \"Spouse\",\n    \"phone\": \"+1234567890\"\n  }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "Get Profile",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/patients/profile",
             "headers": {
               "Authorization": "Bearer {{token}}"
             }
