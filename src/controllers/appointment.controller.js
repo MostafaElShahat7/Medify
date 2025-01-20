@@ -1,7 +1,7 @@
 const Appointment = require('../models/appointment.model');
 const Doctor = require('../models/doctor.model');
 const { appointmentSchema, updateAppointmentSchema } = require('../validators/appointment.validator');
-const { NotificationService } = require('../services/notification.service');
+const NotificationService = require('../services/notification.service');
 
 const createAppointment = async (req, res) => {
   try {
@@ -18,10 +18,11 @@ const createAppointment = async (req, res) => {
     });
     await appointment.save();
 
-    // Send notification
-    await NotificationService.sendAppointmentNotification(
-      appointment,
-      'New appointment scheduled'
+    // Send notification using the static method
+    await NotificationService.sendPushNotification(
+      doctor._id,
+      'New Appointment',
+      'A new appointment has been scheduled'
     );
 
     res.status(201).json({
@@ -69,9 +70,10 @@ const updateAppointment = async (req, res) => {
     await appointment.save();
 
     // Send notification
-    await NotificationService.sendAppointmentNotification(
-      appointment,
-      `Appointment ${req.body.status}`
+    await NotificationService.sendPushNotification(
+      appointment.patientId,
+      'Appointment Update',
+      `Your appointment has been ${req.body.status}`
     );
 
     res.json({
