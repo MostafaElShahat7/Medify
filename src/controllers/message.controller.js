@@ -1,5 +1,5 @@
 const Message = require('../models/message.model');
-const User = require('../models/user.model');
+// const User = require('../models/user.model');
 const { messageSchema } = require('../validators/message.validator');
 const { NotificationService } = require('../services/notification.service');
 
