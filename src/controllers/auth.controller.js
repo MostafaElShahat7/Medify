@@ -1,59 +1,85 @@
-const User = require('../models/user.model');
-const { generateToken } = require('../utils/jwt.util');
-const { registerSchema, loginSchema } = require('../validators/auth.validator');
+const jwt = require('jsonwebtoken');
+const Admin = require('../models/admin.model');
+const Doctor = require('../models/doctor.model');
+const Patient = require('../models/patient.model');
+const { sendEmail } = require('../utils/email.util');
+
+const getModel = (role) => {
+  switch (role.toLowerCase()) {
+    case 'admin': return Admin;
+    case 'doctor': return Doctor;
+    case 'patient': return Patient;
+    default: throw new Error('Invalid role');
+  }
+};
 
 const register = async (req, res) => {
   try {
-    // Validate request body
-    await registerSchema.validate(req.body);
+    const { role, ...userData } = req.body;
+    const Model = getModel(role);
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: req.body.email });
+    // Check if email or username already exists
+    const existingUser = await Model.findOne({
+      $or: [
+        { email: userData.email },
+        { username: userData.username }
+      ]
+    });
+
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
+      return res.status(400).json({ 
+        message: 'Email or username already exists' 
+      });
     }
 
-    // Create new user
-    const user = new User(req.body);
-    await user.save();
+    // Create user
+    const user = await Model.create(userData);
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = jwt.sign(
+      { id: user._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: 'Registration successful',
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 const login = async (req, res) => {
   try {
-    // Validate request body
-    await loginSchema.validate(req.body);
+    const { email, password, role } = req.body;
+    const Model = getModel(role);
 
     // Find user
-    const user = await User.findOne({ email: req.body.email });
+    const user = await Model.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Verify password
-    const isValidPassword = await user.comparePassword(req.body.password);
+    const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = jwt.sign(
+      { id: user._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
 
     res.json({
       message: 'Login successful',
@@ -62,15 +88,78 @@ const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role
       }
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const requestPasswordReset = async (req, res) => {
+  try {
+    const { email, role } = req.body;
+    const Model = getModel(role);
+
+    // Find user
+    const user = await Model.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { id: user._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Save reset token hash
+    user.resetToken = resetToken;
+    await user.save();
+
+    // Send reset email
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await sendEmail(
+      email,
+      'Password Reset Request',
+      `Click the following link to reset your password: ${resetUrl}`
+    );
+
+    res.json({ message: 'Password reset email sent' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const Model = getModel(decoded.role);
+
+    // Find user
+    const user = await Model.findById(decoded.id);
+    if (!user || user.resetToken !== token) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.resetToken = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
 module.exports = {
   register,
-  login
+  login,
+  requestPasswordReset,
+  resetPassword
 };

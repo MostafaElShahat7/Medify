@@ -5,17 +5,84 @@
   },
   "item": [
     {
-
       "name": "Auth",
       "item": [
         {
-          "name": "Register",
+          "name": "Register Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('token', pm.response.json().token);",
+                  "    pm.environment.set('doctorId', pm.response.json().user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/auth/register",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"patient\"\n}",
+              "raw": {
+                "name": "Dr. John Doe",
+                "email": "doctor@example.com",
+                "username": "dr.johndoe",
+                "password": "password123",
+                "role": "doctor",
+                "nationality": "American",
+                "clinicName": "Health Plus Clinic",
+                "clinicAddress": "123 Medical St",
+                "specialization": "Cardiology",
+                "experienceYears": 10
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Register Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('token', pm.response.json().token);",
+                  "    pm.environment.set('patientId', pm.response.json().user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "name": "Jane Smith",
+                "email": "patient@example.com",
+                "username": "janesmith",
+                "password": "password123",
+                "role": "patient",
+                "dateOfBirth": "1990-01-01",
+                "bloodType": "A_POSITIVE",
+                "height": 170,
+                "weight": 65,
+                "chronicCondition": "None",
+                "diabetes": false,
+                "heartRate": 75
+              },
               "options": {
                 "raw": {
                   "language": "json"
@@ -26,12 +93,75 @@
         },
         {
           "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseData = pm.response.json();",
+                  "    pm.environment.set('token', responseData.token);",
+                  "    ",
+                  "    // Save user ID based on role",
+                  "    if (responseData.user.role === 'doctor') {",
+                  "        pm.environment.set('doctorId', responseData.user.id);",
+                  "    } else if (responseData.user.role === 'patient') {",
+                  "        pm.environment.set('patientId', responseData.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
+              "raw": {
+                "email": "doctor@example.com",
+                "password": "password123",
+                "role": "doctor"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/request-reset-password",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "email": "user@example.com",
+                "role": "doctor"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/reset-password",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "token": "{{resetToken}}",
+                "newPassword": "newpassword123"
+              },
               "options": {
                 "raw": {
                   "language": "json"
@@ -58,13 +188,14 @@
               "raw": {
                 "specialization": "Cardiology",
                 "experienceYears": 10,
-                "availability": [
-                  {
-                    "day": "monday",
-                    "startTime": "09:00",
-                    "endTime": "17:00"
-                  }
-                ]
+                "nationality": "American",
+                "clinicName": "Health Plus Clinic",
+                "clinicAddress": "123 Medical St"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             }
           }
@@ -90,8 +221,14 @@
             "body": {
               "mode": "raw",
               "raw": {
-                "specialization": "Neurology",
-                "experienceYears": 12
+                "specialization": "Cardiology",
+                "experienceYears": 12,
+                "clinicName": "Updated Clinic Name"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             }
           }
@@ -99,7 +236,7 @@
         {
           "name": "Update Availability",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "url": "{{baseUrl}}/api/doctors/availability",
             "headers": {
               "Authorization": "Bearer {{token}}"
@@ -109,12 +246,88 @@
               "raw": {
                 "availability": [
                   {
-                    "day": "monday",
+                    "dayOfWeek": "MONDAY",
+                    "startTime": "09:00",
+                    "endTime": "17:00"
+                  },
+                  {
+                    "dayOfWeek": "WEDNESDAY",
                     "startTime": "10:00",
                     "endTime": "18:00"
                   }
                 ]
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
+            }
+          }
+        },
+        {
+          "name": "Get Availability",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctors/availability",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/doctors/posts",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "content",
+                  "value": "New medical research findings about heart health",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/doctors/posts/{{postId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "content": "Updated medical research findings"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/doctors/posts/{{postId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
             }
           }
         }
@@ -135,13 +348,16 @@
               "mode": "raw",
               "raw": {
                 "dateOfBirth": "1990-01-01",
-                "gender": "male",
                 "bloodType": "A_POSITIVE",
-                "allergies": ["penicillin"],
-                "emergencyContact": {
-                  "name": "Jane Doe",
-                  "relationship": "spouse",
-                  "phone": "+1234567890"
+                "height": 170,
+                "weight": 65,
+                "chronicCondition": "None",
+                "diabetes": false,
+                "heartRate": 75
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
               }
             }
@@ -158,26 +374,55 @@
           }
         },
         {
-          "name": "Add Medical History",
+          "name": "Update Profile",
           "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/patients/medical-history",
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/patients/profile",
             "headers": {
               "Authorization": "Bearer {{token}}"
             },
             "body": {
               "mode": "raw",
               "raw": {
-                "condition": "Hypertension",
-                "diagnosedDate": "2023-01-01",
-                "medications": [
-                  {
-                    "name": "Lisinopril",
-                    "dosage": "10mg",
-                    "frequency": "daily"
-                  }
-                ]
+                "height": 171,
+                "weight": 66,
+                "heartRate": 72
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
+            }
+          }
+        },
+        {
+          "name": "Add to Favorites",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/patients/favorites/{{doctorId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Favorite Doctors",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/patients/favorites",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Remove from Favorites",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/patients/favorites/{{doctorId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
             }
           }
         }
@@ -188,6 +433,19 @@
       "item": [
         {
           "name": "Create Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.environment.set('appointmentId', pm.response.json().appointment.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/appointments",
@@ -198,8 +456,13 @@
               "mode": "raw",
               "raw": {
                 "doctorId": "{{doctorId}}",
-                "appointmentDate": "2024-01-15T10:00:00Z",
+                "dateTime": "2024-01-15T10:00:00Z",
                 "reason": "Annual checkup"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
             }
           }
@@ -211,6 +474,9 @@
             "url": "{{baseUrl}}/api/appointments",
             "headers": {
               "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "status": "UPCOMING"
             }
           }
         },
@@ -225,58 +491,9 @@
             "body": {
               "mode": "raw",
               "raw": {
-                "status": "completed",
+                "status": "COMPLETED",
                 "notes": "Patient showed improvement"
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Medical Records",
-      "item": [
-        {
-          "name": "Create Medical Report",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/medical-records/reports",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "diagnosis",
-                  "value": "Common cold",
-                  "type": "text"
-                },
-                {
-                  "key": "symptoms",
-                  "value": "[\"fever\", \"cough\"]",
-                  "type": "text"
-                },
-                {
-                  "key": "attachments",
-                  "type": "file",
-                  "src": []
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Create Prescription",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/medical-records/prescriptions",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"medications\": [\n    {\n      \"name\": \"Paracetamol\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"Every 6 hours\",\n      \"duration\": \"5 days\"\n    }\n  ],\n  \"validUntil\": \"2024-01-25T00:00:00Z\"\n}",
+              },
               "options": {
                 "raw": {
                   "language": "json"
@@ -300,7 +517,10 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"receiverId\": \"receiver_id\",\n  \"content\": \"Hello, how are you?\"\n}",
+              "raw": {
+                "receiverId": "{{receiverId}}",
+                "content": "Hello, I have a question about my prescription"
+              },
               "options": {
                 "raw": {
                   "language": "json"
@@ -318,54 +538,14 @@
               "Authorization": "Bearer {{token}}"
             }
           }
-        }
-      ]
-    },
-    {
-      "name": "Search",
-      "item": [
-        {
-          "name": "Search Doctors",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/search/doctors",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "params": {
-              "specialization": "Cardiology",
-              "rating": "4",
-              "availability": "monday"
-            }
-          }
         },
         {
-          "name": "Search Appointments",
+          "name": "Get Messages",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/search/appointments",
+            "url": "{{baseUrl}}/api/messages/{{userId}}",
             "headers": {
               "Authorization": "Bearer {{token}}"
-            },
-            "params": {
-              "status": "scheduled",
-              "startDate": "2024-01-01",
-              "endDate": "2024-12-31"
-            }
-          }
-        },
-        {
-          "name": "Search Medical Records",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/search/medical-records",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "params": {
-              "diagnosis": "flu",
-              "startDate": "2024-01-01",
-              "endDate": "2024-12-31"
             }
           }
         }
@@ -384,22 +564,15 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent doctor, very professional and caring.\"\n}",
+              "raw": {
+                "rating": 5,
+                "comment": "Excellent doctor, very professional and caring."
+              },
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "Get Doctor Reviews",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/reviews/doctor/{{doctorId}}",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
             }
           }
         },
@@ -413,7 +586,10 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Updated review: Very good experience overall.\"\n}",
+              "raw": {
+                "rating": 4,
+                "comment": "Updated review comment"
+              },
               "options": {
                 "raw": {
                   "language": "json"
@@ -433,18 +609,108 @@
           }
         }
       ]
-    }
-    
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
     },
     {
-      "key": "token",
-      "value": "your_jwt_token_here"
+      "name": "Medical Records",
+      "item": [
+        {
+          "name": "Create Medical Report",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "diagnosis",
+                  "value": "Influenza",
+                  "type": "text"
+                },
+                {
+                  "key": "symptoms",
+                  "value": ["fever", "cough"],
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Prescription",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "patientId": "{{patientId}}",
+                "medications": [
+                  {
+                    "name": "Amoxicillin",
+                    "dosage": "500mg",
+                    "frequency": "every 8 hours",
+                    "duration": "7 days",
+                    "instructions": "Take with food"
+                  }
+                ],
+                "notes": "Complete the full course",
+                "validUntil": "2024-01-22T00:00:00.000Z"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Doctors",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/doctors",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "specialization": "Cardiology",
+              "rating": "4",
+              "dayOfWeek": "MONDAY"
+            }
+          }
+        },
+        {
+          "name": "Search Medical Records",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/medical-records",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "diagnosis": "Influenza",
+              "startDate": "2024-01-01",
+              "endDate": "2024-12-31"
+            }
+          }
+        }
+      ]
     }
   ]
-  
 }

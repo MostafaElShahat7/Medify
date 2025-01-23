@@ -29,8 +29,31 @@ class NotificationService {
   }
 
   static async sendAppointmentReminder(appointment) {
-    const reminderTime = new Date(appointment.appointmentDate);
-    reminderTime.setHours(reminderTime.getHours() - 24); // 24 hours before
+    // Send reminder 24 hours before appointment
+    const reminderTime = new Date(appointment.dateTime);
+    reminderTime.setHours(reminderTime.getHours() - 24);
+
+    const now = new Date();
+    if (reminderTime > now) {
+      const delay = reminderTime.getTime() - now.getTime();
+      
+      setTimeout(async () => {
+        const formattedDate = appointment.dateTime.toLocaleDateString();
+        const formattedTime = appointment.dateTime.toLocaleTimeString();
+        
+        await this.sendPushNotification(
+          appointment.patientId,
+          'Appointment Reminder',
+          `You have an appointment tomorrow at ${formattedTime} on ${formattedDate}`
+        );
+      }, delay);
+    }
+  }
+
+  // Send reminder 1 hour before appointment
+  static async sendUpcomingAppointmentReminder(appointment) {
+    const reminderTime = new Date(appointment.dateTime);
+    reminderTime.setHours(reminderTime.getHours() - 1);
 
     const now = new Date();
     if (reminderTime > now) {
@@ -39,57 +62,10 @@ class NotificationService {
       setTimeout(async () => {
         await this.sendPushNotification(
           appointment.patientId,
-          'Appointment Reminder',
-          `You have an appointment tomorrow at ${appointment.appointmentDate.toLocaleTimeString()}`
+          'Upcoming Appointment',
+          `Your appointment is in 1 hour`
         );
       }, delay);
-    }
-  }
-
-  static async sendMedicationReminder(prescription) {
-    const medications = prescription.medications;
-    const patient = await prisma.user.findUnique({
-      where: { id: prescription.patientId }
-    });
-
-    medications.forEach(medication => {
-      // Parse frequency to set up reminders
-      const frequency = this.parseFrequency(medication.frequency);
-      const endDate = new Date(prescription.validUntil);
-      
-      this.scheduleMedicationReminders(
-        patient.id,
-        medication.name,
-        frequency,
-        endDate
-      );
-    });
-  }
-
-  static parseFrequency(frequency) {
-    // Convert frequency string to hours
-    // e.g., "every 8 hours" => 8
-    const match = frequency.match(/\d+/);
-    return match ? parseInt(match[0]) : 24;
-  }
-
-  static scheduleMedicationReminders(userId, medicationName, frequencyHours, endDate) {
-    const now = new Date();
-    let nextReminder = new Date();
-    nextReminder.setHours(nextReminder.getHours() + frequencyHours);
-
-    while (nextReminder <= endDate) {
-      const delay = nextReminder.getTime() - now.getTime();
-      
-      setTimeout(async () => {
-        await this.sendPushNotification(
-          userId,
-          'Medication Reminder',
-          `Time to take your ${medicationName}`
-        );
-      }, delay);
-
-      nextReminder.setHours(nextReminder.getHours() + frequencyHours);
     }
   }
 }

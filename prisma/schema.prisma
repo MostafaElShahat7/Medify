@@ -7,193 +7,164 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Appointment {
-  id             String         @id @default(uuid())
-  patientId      String
-  doctorId       String
-  appointmentDate DateTime
-  status         AppointmentStatus @default(SCHEDULED)
-  reason         String
-  notes          String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  // Relations
-  patient        User          @relation("PatientAppointments", fields: [patientId], references: [id])
-  doctor         User          @relation("DoctorAppointments", fields: [doctorId], references: [id])
-  medicalReport  MedicalReport?
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model User {
-  id              String    @id @default(uuid())
+model Doctor {
+  id              String         @id @default(uuid())
   name            String
-  email           String    @unique
+  email           String         @unique
+  username        String         @unique
   password        String
-  role            UserRole
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  patientProfile  PatientProfile?
-  doctorProfile   DoctorProfile?
-  patientAppointments Appointment[] @relation("PatientAppointments")
-  doctorAppointments  Appointment[] @relation("DoctorAppointments")
-  sentMessages    Message[]    @relation("SentMessages")
-  receivedMessages Message[]   @relation("ReceivedMessages")
-}
-
-model PatientProfile {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  dateOfBirth     DateTime
-  gender          Gender
-  bloodType       BloodType?
-  allergies       String[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  user            User      @relation(fields: [userId], references: [id])
-  medicalHistory  MedicalHistory[]
-  emergencyContact EmergencyContact?
-}
-
-model DoctorProfile {
-  id              String    @id @default(uuid())
-  userId          String    @unique
+  nationality     String
+  clinicName      String?
+  clinicAddress   String?
   specialization  String
   experienceYears Int
-  rating          Float     @default(0)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  user            User      @relation(fields: [userId], references: [id])
-  availability    Availability[]
-}
-
-model MedicalReport {
-  id              String    @id @default(uuid())
-  appointmentId   String    @unique
-  diagnosis       String
-  symptoms        String[]
-  notes           String?
-  recommendations String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  appointment     Appointment @relation(fields: [appointmentId], references: [id])
-  attachments     Attachment[]
-  prescriptions   Prescription[]
-}
-
-model Prescription {
-  id              String    @id @default(uuid())
-  reportId        String
-  status          PrescriptionStatus @default(ACTIVE)
-  notes           String?
-  validUntil      DateTime
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  medicalReport   MedicalReport @relation(fields: [reportId], references: [id])
-  medications     Medication[]
-}
-
-model Message {
-  id              String    @id @default(uuid())
-  senderId        String
-  receiverId      String
-  content         String
-  read            Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  sender          User      @relation("SentMessages", fields: [senderId], references: [id])
-  receiver        User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  attachments     Attachment[]
-}
-
-model MedicalHistory {
-  id              String    @id @default(uuid())
-  patientId       String
-  condition       String
-  diagnosedDate   DateTime?
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  // Relations
-  patient         PatientProfile @relation(fields: [patientId], references: [id])
-  medications     Medication[]
-}
-
-model Medication {
-  id              String    @id @default(uuid())
-  name            String
-  dosage          String
-  frequency       String
-  duration        String?
-  instructions    String?
+  rating          Float          @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   
   // Relations
-  prescriptionId  String?
-  prescription    Prescription? @relation(fields: [prescriptionId], references: [id])
-  medicalHistoryId String?
-  medicalHistory  MedicalHistory? @relation(fields: [medicalHistoryId], references: [id])
+  availability    Availability[]
+  appointments    Appointment[]
+  posts           Post[]
+  favoredBy       FavoriteDoctor[]
+  reviews         Review[]
 }
 
-model Attachment {
-  id              String    @id @default(uuid())
-  filename        String
-  path            String
-  mimetype        String
-  uploadedAt      DateTime  @default(now())
-
-  // Relations
-  messageId       String?
-  message         Message?  @relation(fields: [messageId], references: [id])
-  reportId        String?
-  medicalReport   MedicalReport? @relation(fields: [reportId], references: [id])
-}
-
-model EmergencyContact {
-  id              String    @id @default(uuid())
-  patientId       String    @unique
+model Patient {
+  id              String         @id @default(uuid())
   name            String
-  relationship    String?
-  phone           String
+  email           String         @unique
+  username        String         @unique
+  password        String
+  dateOfBirth     DateTime
+  bloodType       BloodType?
+  height          Float?
+  weight          Float?
+  chronicCondition String?
+  diabetes        Boolean        @default(false)
+  heartRate       Int?
+  bmi             Float?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   // Relations
-  patient         PatientProfile @relation(fields: [patientId], references: [id])
+  appointments    Appointment[]
+  medicalHistory  MedicalHistory[]
+  favoriteDoctors FavoriteDoctor[]
+  reviews         Review[]
 }
 
 model Availability {
-  id              String    @id @default(uuid())
-  doctorId        String
-  day             WeekDay
-  startTime       String
-  endTime         String
+  id        String   @id @default(uuid())
+  doctorId  String
+  dayOfWeek WeekDay
+  startTime String
+  endTime   String
+  isBooked  Boolean  @default(false)
+  
+  // Relations
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, dayOfWeek, startTime])
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  patientId      String
+  doctorId       String
+  dateTime       DateTime
+  status         AppointmentStatus @default(UPCOMING)
+  reason         String?
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   // Relations
-  doctor          DoctorProfile @relation(fields: [doctorId], references: [id])
-
-  @@unique([doctorId, day])
+  patient        Patient           @relation(fields: [patientId], references: [id])
+  doctor         Doctor            @relation(fields: [doctorId], references: [id])
+  medicalReport  MedicalReport?
 }
 
-enum UserRole {
-  ADMIN
-  DOCTOR
-  PATIENT
+model MedicalHistory {
+  id          String    @id @default(uuid())
+  patientId   String
+  type        String    // e.g., "X-Ray", "Lab Test", "Consultation"
+  date        DateTime
+  diagnosis   String?
+  treatment   String?
+  notes       String?
+  attachments String[]  // URLs to stored files
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  patient     Patient   @relation(fields: [patientId], references: [id])
 }
 
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
+model Post {
+  id        String   @id @default(uuid())
+  doctorId  String
+  content   String
+  image     String?
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+}
+
+model FavoriteDoctor {
+  id        String   @id @default(uuid())
+  patientId String
+  doctorId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  patientId String
+  doctorId  String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId])
+}
+
+model MedicalReport {
+  id            String    @id @default(uuid())
+  appointmentId String    @unique
+  diagnosis     String
+  prescription  String?
+  notes         String?
+  attachments   String[]  // URLs to stored files
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
 }
 
 enum BloodType {
@@ -207,18 +178,6 @@ enum BloodType {
   O_NEGATIVE
 }
 
-enum AppointmentStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-}
-
-enum PrescriptionStatus {
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
 enum WeekDay {
   MONDAY
   TUESDAY
@@ -227,4 +186,10 @@ enum WeekDay {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum AppointmentStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
 }

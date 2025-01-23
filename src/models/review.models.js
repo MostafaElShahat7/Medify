@@ -8,7 +8,7 @@ const reviewSchema = new mongoose.Schema({
   },
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Patient',
     required: true
   },
   rating: {
@@ -19,8 +19,7 @@ const reviewSchema = new mongoose.Schema({
   },
   comment: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   }
 }, {
   timestamps: true

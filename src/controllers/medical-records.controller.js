@@ -1,4 +1,4 @@
-const MedicalReport = require('../models/medical-report.model');
+const MedicalReport = require('../models/medical-record.model');
 const Prescription = require('../models/prescription.model');
 const { medicalReportSchema, prescriptionSchema, updatePrescriptionSchema } = require('../validators/medical-records.validator');
 const { NotificationService } = require('../services/notification.service');
