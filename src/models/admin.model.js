@@ -24,19 +24,29 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  gender: {
+    type: String,
+    required: true,
+    enum: ['male', 'female']
+  },
+  permissions: {
+    manageUsers: { type: Boolean, default: true },
+    manageAppointments: { type: Boolean, default: true },
+    manageMedicalRecords: { type: Boolean, default: true },
+    viewReports: { type: Boolean, default: true },
+    manageSystem: { type: Boolean, default: true }
+  },
   resetToken: String
 }, {
   timestamps: true
 });
 
-// Hash password before saving
 adminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Compare password method
 adminSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

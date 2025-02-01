@@ -24,6 +24,11 @@ const patientSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  gender: {
+    type: String,
+    required: true,
+    enum: ['male', 'female']
+  },
   dateOfBirth: {
     type: Date,
     required: true
@@ -42,6 +47,25 @@ const patientSchema = new mongoose.Schema({
   heartRate: Number,
   bmi: Number,
   resetToken: String,
+  medicalHistory: [{
+    type: {
+      type: String,
+      required: true
+    },
+    date: {
+      type: Date,
+      required: true
+    },
+    description: String,
+    diagnosis: String,
+    treatment: String,
+    attachments: [String],
+    doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Doctor',
+      required: true
+    }
+  }],
   favoriteDoctors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor'

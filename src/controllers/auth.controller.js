@@ -32,8 +32,9 @@ const register = async (req, res) => {
       });
     }
 
-    // Create user
-    const user = await Model.create(userData);
+    // Create user with profile directly
+    const user = new Model(userData);
+    await user.save();
 
     // Generate token
     const token = jwt.sign(
@@ -53,7 +54,19 @@ const register = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Log the actual error for debugging
+    console.error('Registration error:', error);
+    
+    // Send a more user-friendly error message
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'Email or username already exists' 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Registration failed. Please try again.' 
+    });
   }
 };
 
