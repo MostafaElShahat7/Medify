@@ -1,16 +1,16 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { authenticate } = require('../middleware/auth.middleware');
-const { 
+const { authenticateDoctor } = require("../middleware/auth.middleware");
+const {
   searchDoctors,
   searchAppointments,
   searchMedicalRecords
-} = require('../controllers/search.controller');
+} = require("../controllers/search.controller");
 
-router.use(authenticate);
+router.use(authenticateDoctor);
 
-router.get('/doctors', searchDoctors);
-router.get('/appointments', searchAppointments);
-router.get('/medical-records', searchMedicalRecords);
+router.get("/doctors", searchDoctors);
+router.get("/appointments", searchAppointments);
+router.get("/medical-records", searchMedicalRecords);
 
 module.exports = router;

@@ -1,21 +1,21 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const { authenticate } = require('../middleware/auth.middleware');
+const multer = require("multer");
+const { authenticateDoctor } = require("../middleware/auth.middleware");
 const {
   sendMessage,
   getConversations,
   getMessages,
   getUnreadCount
-} = require('../controllers/message.controller');
+} = require("../controllers/message.controller");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/messages');
+    cb(null, "uploads/messages");
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     cb(null, `${uniqueSuffix}-${file.originalname}`);
   }
 });
@@ -23,12 +23,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // All routes require authentication
-router.use(authenticate);
+router.use(authenticateDoctor);
 
 // Message routes
-router.post('/', upload.array('attachments'), sendMessage);
-router.get('/conversations', getConversations);
-router.get('/unread', getUnreadCount);
-router.get('/:userId', getMessages);
+router.post("/", upload.array("attachments"), sendMessage);
+router.get("/conversations", getConversations);
+router.get("/unread", getUnreadCount);
+router.get("/:userId", getMessages);
 
 module.exports = router;

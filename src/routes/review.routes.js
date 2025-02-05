@@ -1,18 +1,18 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { authenticate, authorize } = require('../middleware/auth.middleware');
+const { authenticateDoctor, authorize } = require("../middleware/auth.middleware");
 const {
   createReview,
   getDoctorReviews,
   updateReview,
   deleteReview
-} = require('../controllers/review.controller');
+} = require("../controllers/review.controller");
 
-router.use(authenticate);
+router.use(authenticateDoctor);
 
-router.post('/:doctorId', authorize('patient'), createReview);
-router.get('/doctor/:doctorId', getDoctorReviews);
-router.put('/:reviewId', authorize('patient'), updateReview);
-router.delete('/:reviewId', authorize('patient'), deleteReview);
+router.post("/:doctorId", authorize("patient"), createReview);
+router.get("/doctor/:doctorId", getDoctorReviews);
+router.put("/:reviewId", authorize("patient"), updateReview);
+router.delete("/:reviewId", authorize("patient"), deleteReview);
 
 module.exports = router;

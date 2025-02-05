@@ -1,25 +1,25 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { authenticate, authorize } = require('../middleware/auth.middleware');
+const { authenticatePatient, authorize } = require("../middleware/auth.middleware");
 const {
   createPatientProfile,
   getPatientProfile,
   updatePatientProfile,
   addMedicalHistory,
   getMedicalHistory
-} = require('../controllers/patient.controller');
+} = require("../controllers/patient.controller");
 
 // All routes require authentication and patient role
-router.use(authenticate);
-router.use(authorize('patient'));
+router.use(authenticatePatient);
+router.use(authorize("patient"));
 
 // Patient profile routes
-router.post('/profile', createPatientProfile);
-router.get('/profile', getPatientProfile);
-router.put('/profile', updatePatientProfile);
+router.post("/profile", createPatientProfile);
+router.get("/profile", getPatientProfile);
+router.put("/profile", updatePatientProfile);
 
 // Medical history routes
-router.post('/medical-history', addMedicalHistory);
-router.get('/medical-history', getMedicalHistory);
+router.post("/medical-history", addMedicalHistory);
+router.get("/medical-history", getMedicalHistory);
 
 module.exports = router;
