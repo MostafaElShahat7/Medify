@@ -1,15 +1,19 @@
-const jwt = require('jsonwebtoken');
-const Admin = require('../models/admin.model');
-const Doctor = require('../models/doctor.model');
-const Patient = require('../models/patient.model');
-const { sendEmail } = require('../utils/email.util');
+const jwt = require("jsonwebtoken");
+const Admin = require("../models/admin.model");
+const Doctor = require("../models/doctor.model");
+const Patient = require("../models/patient.model");
+const { sendEmail } = require("../utils/email.util");
 
 const getModel = (role) => {
   switch (role.toLowerCase()) {
-    case 'admin': return Admin;
-    case 'doctor': return Doctor;
-    case 'patient': return Patient;
-    default: throw new Error('Invalid role');
+    case "admin":
+      return Admin;
+    case "doctor":
+      return Doctor;
+    case "patient":
+      return Patient;
+    default:
+      throw new Error("Invalid role");
   }
 };
 
@@ -20,15 +24,12 @@ const register = async (req, res) => {
 
     // Check if email or username already exists
     const existingUser = await Model.findOne({
-      $or: [
-        { email: userData.email },
-        { username: userData.username }
-      ]
+      $or: [{ email: userData.email }, { username: userData.username }]
     });
 
     if (existingUser) {
-      return res.status(400).json({ 
-        message: 'Email or username already exists' 
+      return res.status(400).json({
+        message: "Email or username already exists"
       });
     }
 
@@ -37,14 +38,12 @@ const register = async (req, res) => {
     await user.save();
 
     // Generate token
-    const token = jwt.sign(
-      { id: user._id, role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
+    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
 
     res.status(201).json({
-      message: 'Registration successful',
+      message: "Registration successful",
       token,
       user: {
         id: user._id,
@@ -55,17 +54,17 @@ const register = async (req, res) => {
     });
   } catch (error) {
     // Log the actual error for debugging
-    console.error('Registration error:', error);
-    
-    // Send a more user-friendly error message
-    if (error.code === 11000) {
-      return res.status(400).json({ 
-        message: 'Email or username already exists' 
-      });
-    }
-    
-    res.status(500).json({ 
-      message: 'Registration failed. Please try again.' 
+    console.error(
+      "================================================================================"
+    );
+    console.error(error);
+    console.error(
+      "================================================================================"
+    );
+
+    res.status(500).json({
+      message: "Registration failed. Please try again.",
+      error
     });
   }
 };
@@ -78,24 +77,22 @@ const login = async (req, res) => {
     // Find user
     const user = await Model.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Verify password
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Generate token
-    const token = jwt.sign(
-      { id: user._id, role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
+    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         id: user._id,
@@ -117,15 +114,13 @@ const requestPasswordReset = async (req, res) => {
     // Find user
     const user = await Model.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Generate reset token
-    const resetToken = jwt.sign(
-      { id: user._id, role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const resetToken = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, {
+      expiresIn: "1h"
+    });
 
     // Save reset token hash
     user.resetToken = resetToken;
@@ -135,11 +130,11 @@ const requestPasswordReset = async (req, res) => {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
     await sendEmail(
       email,
-      'Password Reset Request',
+      "Password Reset Request",
       `Click the following link to reset your password: ${resetUrl}`
     );
 
-    res.json({ message: 'Password reset email sent' });
+    res.json({ message: "Password reset email sent" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -156,7 +151,7 @@ const resetPassword = async (req, res) => {
     // Find user
     const user = await Model.findById(decoded.id);
     if (!user || user.resetToken !== token) {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
+      return res.status(400).json({ message: "Invalid or expired reset token" });
     }
 
     // Update password
@@ -164,7 +159,7 @@ const resetPassword = async (req, res) => {
     user.resetToken = undefined;
     await user.save();
 
-    res.json({ message: 'Password reset successful' });
+    res.json({ message: "Password reset successful" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

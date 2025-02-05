@@ -1,33 +1,93 @@
-const { verifyToken } = require('../utils/jwt.util');
-// const User = require('../models/user.model');
+const { verifyToken } = require("../utils/jwt.util");
 
-const authenticate = async (req, res, next) => {
+const Doctor = require("../models/doctor.model");
+const Patient = require("../models/patient.model");
+const Admin = require("../models/admin.model");
+
+const authenticateDoctor = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Authentication required' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authentication required" });
     }
 
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    
-    const user = await User.findById(decoded.userId);
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token, process.env.JWT_SECRET);
+
+    const user = await Doctor.findById(decoded.id);
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = user;
+    req.user = {
+      ...user,
+      role: "doctor"
+    };
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Invalid token' });
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+const authenticatePatient = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token, process.env.JWT_SECRET);
+
+    const user = await Patient.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    req.user = {
+      ...user,
+      role: "patient"
+    };
+    next();
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token, process.env.JWT_SECRET);
+
+    const user = await Admin.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    req.user = {
+      ...user,
+      role: "admin"
+    };
+    next();
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
   }
 };
 
 const authorize = (...roles) => {
   return (req, res, next) => {
+    console.log("--------------------------------------------");
+    console.log(req.user);
+    console.log("--------------------------------------------");
+
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: 'You do not have permission to perform this action' 
+      return res.status(403).json({
+        message: "You do not have permission to perform this action"
       });
     }
     next();
@@ -35,6 +95,9 @@ const authorize = (...roles) => {
 };
 
 module.exports = {
-  authenticate,
+  authenticateDoctor,
+  authenticatePatient,
+  authenticateAdmin,
+
   authorize
 };
