@@ -1,37 +1,39 @@
-const Review = require('../models/review.model');
+const Review = require('../models/review.models');
 const Doctor = require('../models/doctor.model');
 const { reviewSchema } = require('../validators/review.validator');
 const { catchAsync } = require('../utils/error.util');
 
-const createReview = catchAsync(async (req, res) => {
-  await reviewSchema.validate(req.body);
+const createReview = async (req, res) => {
+  try {
+    await reviewSchema.validate(req.body);
 
-  const existingReview = await Review.findOne({
-    doctorId: req.params.doctorId,
-    patientId: req.user._id
-  });
+    const existingReview = await Review.findOne({
+      doctorId: req.params.doctorId,
+      patientId: req.user.id
+    });
 
-  if (existingReview) {
-    return res.status(400).json({ message: 'You have already reviewed this doctor' });
+    if (existingReview) {
+      return res.status(400).json({ message: 'You have already reviewed this doctor' });
+    }
+
+    const review = new Review({
+      doctorId: req.params.doctorId,
+      patientId: req.user.id,
+      rating: req.body.rating,
+      comment: req.body.comment
+    });
+
+    await review.save();
+
+    res.status(201).json({
+      message: 'Review created successfully',
+      review
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
+};
 
-  const review = new Review({
-    doctorId: req.params.doctorId,
-    patientId: req.user._id,
-    rating: req.body.rating,
-    comment: req.body.comment
-  });
-
-  await review.save();
-
-  // Update doctor's average rating
-  await updateDoctorRating(req.params.doctorId);
-
-  res.status(201).json({
-    message: 'Review created successfully',
-    review
-  });
-});
 
 const getDoctorReviews = catchAsync(async (req, res) => {
   const reviews = await Review.find({ doctorId: req.params.doctorId })

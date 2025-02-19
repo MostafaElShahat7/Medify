@@ -9,9 +9,15 @@ const registerSchema = yup.object({
     .required('Email is required')
     .trim()
     .lowercase(),
+    unique: true(),
   password: yup.string()
     .min(8, 'Password must be at least 8 characters')
     .required('Password is required'),
+    username: {
+      type: String,
+      required: true,
+      unique: true 
+  },
   role: yup.string()
     .oneOf(['admin', 'doctor', 'patient'], 'Invalid role')
     .required('Role is required')

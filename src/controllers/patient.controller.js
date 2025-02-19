@@ -1,4 +1,6 @@
 const Patient = require("../models/patient.model");
+const jwt = require('jsonwebtoken');
+const Doctor = require('../models/doctor.model');
 const {
   patientSchema,
   medicalHistorySchema,
@@ -34,39 +36,40 @@ const createPatientProfile = async (req, res) => {
 };
 
 const getPatientProfile = async (req, res) => {
-  try {
-    const patient = await Patient.findOne({ userId: req.user._id }).select(
-      "-password"
-    );
+  const token = req.headers.authorization.split(' ')[1]; 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+    const patientId = decoded.id; 
 
-    if (!patient) {
-      return res.status(404).json({ message: "Patient profile not found" });
+    try {
+        const patient = await Patient.findById(patientId).populate('userId'); 
+        if (!patient) {
+            return res.status(404).send("Patient not found.");
+        }
+        res.status(200).json(patient); 
+    } catch (error) {
+        res.status(500).send("Error retrieving profile: " + error.message);
     }
-
-    res.json(patient);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  };
 
 const updatePatientProfile = async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+  const patientId = decoded.id; 
+
+  
+  const updatedData = req.body; 
+
   try {
-    await patientSchema.validate(req.body);
-
-    const patient = await Patient.findOne({ userId: req.user._id });
-    if (!patient) {
-      return res.status(404).json({ message: "Patient profile not found" });
-    }
-
-    Object.assign(patient, req.body);
-    await patient.save();
-
-    res.json({
-      message: "Patient profile updated successfully",
-      patient,
-    });
+      const result = await Patient.findByIdAndUpdate(patientId, updatedData, { new: true, runValidators: true }); // تحديث بيانات المريض
+      if (!result) {
+          return res.status(404).send("Patient not found.");
+      }
+      res.status(200).json({
+        message: "Profile Updated successfully",
+        data: result
+      }); 
   } catch (error) {
-    res.status(400).json({ message: error.message });
+      res.status(500).send("Error updating profile: " + error.message);
   }
 };
 
@@ -93,7 +96,7 @@ const addMedicalHistory = async (req, res) => {
 
 const getMedicalHistory = async (req, res) => {
   try {
-    const patient = await Patient.findOne({ userId: req.user._id }).select(
+    const patient = await Patient.findOne({ userId: req.user.id }).select(
       "medicalHistory"
     );
 
@@ -107,10 +110,81 @@ const getMedicalHistory = async (req, res) => {
   }
 };
 
+const addToFavorites = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    const patient = await Patient.findOne({ userId: req.user.id });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient profile not found' });
+    }
+
+    if (patient.favoriteDoctors.includes(doctorId)) {
+      return res.status(400).json({ message: 'Doctor already in favorites' });
+    }
+
+    patient.favoriteDoctors.push(doctorId);
+    await patient.save();
+
+    res.json({ 
+      message: 'Doctor added to favorites',
+      favoriteDoctors: patient.favoriteDoctors 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getFavorites = async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ userId: req.user.id })
+      .populate('favoriteDoctors', 'name specialization rating');
+    
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient profile not found' });
+    }
+
+    res.json(patient.favoriteDoctors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const removeFromFavorites = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    
+    const patient = await Patient.findOne({ userId: req.user.id });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient profile not found' });
+    }
+
+    patient.favoriteDoctors = patient.favoriteDoctors.filter(
+      id => id.toString() !== doctorId
+    );
+    await patient.save();
+
+    res.json({ 
+      message: 'Doctor removed from favorites',
+      favoriteDoctors: patient.favoriteDoctors 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createPatientProfile,
   getPatientProfile,
   updatePatientProfile,
   addMedicalHistory,
   getMedicalHistory,
+  addToFavorites,
+  getFavorites,
+  removeFromFavorites
 };

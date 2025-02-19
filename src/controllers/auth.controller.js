@@ -19,53 +19,70 @@ const getModel = (role) => {
 
 const register = async (req, res) => {
   try {
-    const { role, ...userData } = req.body;
-    const Model = getModel(role);
+      const { role, ...userData } = req.body;
+      const Model = getModel(role);
 
-    // Check if email or username already exists
-    const existingUser = await Model.findOne({
-      $or: [{ email: userData.email }, { username: userData.username }],
-    });
+      // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل في نموذج الدكتور
+      const existingDoctor = await Doctor.findOne({ email: userData.email });
+      if (existingDoctor) {
+          return res.status(400).json({ message: 'Email is already in use ' });
+      }
 
-    if (existingUser) {
-      return res.status(400).json({
-        message: "Email or username already exists",
+      // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل في نموذج المريض
+      const existingPatient = await Patient.findOne({ email: userData.email });
+      if (existingPatient) {
+          return res.status(400).json({ message: 'Email is already in use ' });
+      }
+
+      // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل في نموذج الدكتور
+      const existingDoctorUsername = await Doctor.findOne({ username: userData.username });
+      if (existingDoctorUsername) {
+          return res.status(400).json({ message: 'Username is already in use ' });
+      }
+
+      // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل في نموذج المريض
+      const existingPatientUsername = await Patient.findOne({ username: userData.username });
+      if (existingPatientUsername) {
+          return res.status(400).json({ message: 'Username is already in use ' });
+      }
+
+      // // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل
+      // const existingUser = await Model.findOne({
+      //     $or: [{ username: userData.username }],
+      // });
+
+      // if (existingUser) {
+      //     return res.status(400).json({ message: 'Username already exists' });
+      // }
+
+      // إنشاء المستخدم
+      const user = new Model(userData);
+      await user.save();
+
+      // توليد التوكن
+      const token = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, {
+          expiresIn: process.env.JWT_EXPIRES_IN,
       });
-    }
 
-    // Create user with profile directly
-    const user = new Model(userData);
-    await user.save();
-
-    // Generate token
-    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-
-    res.status(201).json({
-      message: "Registration successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role,
-      },
-    });
+      res.status(201).json({
+          message: "Registration successful",
+          token,
+          user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role,
+          },
+      });
   } catch (error) {
-    // Log the actual error for debugging
-    console.error(
-      "================================================================================"
-    );
-    console.error(error);
-    console.error(
-      "================================================================================"
-    );
+      console.error("================================================================================");
+      console.error(error);
+      console.error("================================================================================");
 
-    res.status(500).json({
-      message: "Registration failed. Please try again.",
-      error,
-    });
+      res.status(500).json({
+          message: "Registration failed. Please try again.",
+          error,
+      });
   }
 };
 
@@ -87,7 +104,7 @@ const login = async (req, res) => {
     }
 
     // Generate token
-    const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
@@ -95,7 +112,7 @@ const login = async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role,

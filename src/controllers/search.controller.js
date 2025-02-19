@@ -1,6 +1,6 @@
 const Doctor = require('../models/doctor.model');
 const Appointment = require('../models/appointment.model');
-const MedicalReport = require('../models/medical-report.model');
+const MedicalReport = require('../models/medical-record.model');
 const { catchAsync } = require('../utils/error.util');
 
 const searchDoctors = catchAsync(async (req, res) => {

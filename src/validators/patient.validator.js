@@ -10,13 +10,14 @@ const patientSchema = yup.object({
   bloodType: yup.string()
     .oneOf(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
   allergies: yup.array().of(yup.string()),
-  emergencyContact: yup.object({
-    name: yup.string().required('Emergency contact name is required'),
-    relationship: yup.string(),
-    phone: yup.string()
-      .matches(/^\+?[\d\s-]+$/, 'Invalid phone number')
-      .required('Emergency contact phone is required')
-  }).required('Emergency contact information is required')
+  // emergencyContact: yup.object({
+  //   name: yup.string()
+  //   .required('Emergency contact name is required'),
+  //   relationship: yup.string(),
+  //   phone: yup.string()
+  //     .matches(/^\+?[\d\s-]+$/, 'Invalid phone number')
+  //     .required('Emergency contact phone is required')
+  // }).required('Emergency contact information is required')
 });
 
 const medicalHistorySchema = yup.object({

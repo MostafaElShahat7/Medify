@@ -14,8 +14,7 @@ const {
 router.use(authenticateDoctor);
 
 // Create appointment (patients only)
-router.post("/", authorize("patient"), createAppointment);
-
+router.post('/appointments', createAppointment);
 // Get appointments (both doctors and patients)
 router.get("/", authorize("doctor", "patient"), getAppointments);
 

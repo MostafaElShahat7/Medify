@@ -38,7 +38,7 @@ const createMedicalReport = async (req, res) => {
 const getMedicalReports = async (req, res) => {
   try {
     const query = req.user.role === 'doctor'
-      ? { doctorId: req.user._id }
+      ? { doctorId: req.user.id }
       : { patientId: req.user._id };
 
     const reports = await MedicalReport.find(query)
@@ -59,7 +59,8 @@ const createPrescription = async (req, res) => {
 
     const prescription = new Prescription({
       ...req.body,
-      doctorId: req.user._id
+      doctorId: req.user.id,
+      status: 'active'
     });
 
     await prescription.save();
@@ -82,8 +83,8 @@ const createPrescription = async (req, res) => {
 const getPrescriptions = async (req, res) => {
   try {
     const query = req.user.role === 'doctor'
-      ? { doctorId: req.user._id }
-      : { patientId: req.user._id };
+      ? { doctorId: req.user.id }
+      : { patientId: req.user.id };
 
     const prescriptions = await Prescription.find(query)
       .populate('doctorId', 'name specialization')

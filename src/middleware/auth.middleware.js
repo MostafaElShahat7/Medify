@@ -4,6 +4,8 @@ const Doctor = require("../models/doctor.model");
 const Patient = require("../models/patient.model");
 const Admin = require("../models/admin.model");
 
+
+
 const authenticateDoctor = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -98,6 +100,5 @@ module.exports = {
   authenticateDoctor,
   authenticatePatient,
   authenticateAdmin,
-
   authorize,
 };

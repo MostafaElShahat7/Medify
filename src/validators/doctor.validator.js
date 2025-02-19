@@ -1,11 +1,11 @@
 const yup = require('yup');
 
 const doctorSchema = yup.object({
-  specialization: yup.string()
-    .required('Specialization is required'),
+  specialization: yup.string(),
+    // .required('Specialization is required'),
   experienceYears: yup.number()
-    .min(0, 'Experience years must be positive')
-    .required('Experience years is required'),
+    .min(0, 'Experience years must be positive'),
+    // .required('Experience years is required'),
   availability: yup.array().of(
     yup.object({
       day: yup.string()

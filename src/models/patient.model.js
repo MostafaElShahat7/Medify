@@ -35,7 +35,7 @@ const patientSchema = new mongoose.Schema({
   },
   bloodType: {
     type: String,
-    enum: ['A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE']
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
   },
   height: Number,
   weight: Number,
@@ -44,6 +44,10 @@ const patientSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+},
   heartRate: Number,
   bmi: Number,
   resetToken: String,

@@ -177,31 +177,7 @@
     {
       "name": "Doctor",
       "item": [
-        {
-          "name": "Create Profile",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/doctors/profile",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": {
-                "specialization": "Cardiology",
-                "experienceYears": 10,
-                "nationality": "American",
-                "clinicName": "Health Plus Clinic",
-                "clinicAddress": "123 Medical St"
-              },
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
+        
         {
           "name": "Get Profile",
           "request": {
@@ -338,33 +314,7 @@
     {
       "name": "Patient",
       "item": [
-        {
-          "name": "Create Profile",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/api/patients/profile",
-            "headers": {
-              "Authorization": "Bearer {{token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": {
-                "dateOfBirth": "1990-01-01",
-                "bloodType": "A_POSITIVE",
-                "height": 170,
-                "weight": 65,
-                "chronicCondition": "None",
-                "diabetes": false,
-                "heartRate": 75
-              },
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
+        
         {
           "name": "Get Profile",
           "request": {

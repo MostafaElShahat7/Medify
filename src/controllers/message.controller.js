@@ -14,7 +14,7 @@ const sendMessage = async (req, res) => {
     }
 
     const message = new Message({
-      senderId: req.user._id,
+      senderId: req.user.id,
       receiverId: req.body.receiverId,
       content: req.body.content,
       attachments: req.files?.map(file => ({
@@ -44,8 +44,8 @@ const getConversations = async (req, res) => {
       {
         $match: {
           $or: [
-            { senderId: req.user._id },
-            { receiverId: req.user._id }
+            { senderId: req.user.id },
+            { receiverId: req.user.id }
           ]
         }
       },
@@ -56,7 +56,7 @@ const getConversations = async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$senderId', req.user._id] },
+              { $eq: ['$senderId', req.user.id] },
               '$receiverId',
               '$senderId'
             ]
@@ -100,7 +100,7 @@ const getMessages = async (req, res) => {
     const messages = await Message.find({
       $or: [
         { senderId: req.user._id, receiverId: userId },
-        { senderId: userId, receiverId: req.user._id }
+        { senderId: userId, receiverId: req.user.id }
       ]
     })
     .sort({ createdAt: -1 })
@@ -110,7 +110,7 @@ const getMessages = async (req, res) => {
     await Message.updateMany(
       {
         senderId: userId,
-        receiverId: req.user._id,
+        receiverId: req.user.id,
         read: false
       },
       { read: true }

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const { string } = require("yup");
 
 const doctorSchema = new mongoose.Schema(
   {
@@ -65,6 +66,7 @@ const doctorSchema = new mongoose.Schema(
             "SUNDAY",
           ],
         },
+        
         startTime: String,
         endTime: String,
         isBooked: {

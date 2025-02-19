@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const { authenticateDoctor } = require("../middleware/auth.middleware");
+
 const {
   sendMessage,
   getConversations,
@@ -22,8 +23,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+
 // All routes require authentication
 router.use(authenticateDoctor);
+
 
 // Message routes
 router.post("/", upload.array("attachments"), sendMessage);
