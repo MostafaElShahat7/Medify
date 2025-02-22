@@ -4,8 +4,6 @@ const Doctor = require("../models/doctor.model");
 const Patient = require("../models/patient.model");
 const Admin = require("../models/admin.model");
 
-
-
 const authenticateDoctor = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -23,7 +21,7 @@ const authenticateDoctor = async (req, res, next) => {
 
     req.user = {
       ...user,
-      role: "doctor",
+      role: "doctor"
     };
     next();
   } catch (error) {
@@ -48,7 +46,7 @@ const authenticatePatient = async (req, res, next) => {
 
     req.user = {
       ...user,
-      role: "patient",
+      role: "patient"
     };
     next();
   } catch (error) {
@@ -73,7 +71,7 @@ const authenticateAdmin = async (req, res, next) => {
 
     req.user = {
       ...user,
-      role: "admin",
+      role: "admin"
     };
     next();
   } catch (error) {
@@ -89,7 +87,7 @@ const authorize = (...roles) => {
 
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
-        message: "You do not have permission to perform this action",
+        message: "You do not have permission to perform this action"
       });
     }
     next();
@@ -100,5 +98,5 @@ module.exports = {
   authenticateDoctor,
   authenticatePatient,
   authenticateAdmin,
-  authorize,
+  authorize
 };

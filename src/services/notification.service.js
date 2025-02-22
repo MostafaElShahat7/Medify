@@ -1,6 +1,6 @@
-const admin = require('firebase-admin');
-const prisma = require('../config/prisma');
-const winston = require('winston');
+const admin = require("firebase-admin");
+const prisma = require("../config/prisma");
+const winston = require("winston");
 
 class NotificationService {
   static async sendPushNotification(userId, title, body, data = {}) {
@@ -24,7 +24,7 @@ class NotificationService {
       await admin.messaging().send(message);
       winston.info(`Push notification sent to user: ${userId}`);
     } catch (error) {
-      winston.error('Error sending push notification:', error);
+      winston.error("Error sending push notification:", error);
     }
   }
 
@@ -36,14 +36,14 @@ class NotificationService {
     const now = new Date();
     if (reminderTime > now) {
       const delay = reminderTime.getTime() - now.getTime();
-      
+
       setTimeout(async () => {
         const formattedDate = appointment.dateTime.toLocaleDateString();
         const formattedTime = appointment.dateTime.toLocaleTimeString();
-        
+
         await this.sendPushNotification(
           appointment.patientId,
-          'Appointment Reminder',
+          "Appointment Reminder",
           `You have an appointment tomorrow at ${formattedTime} on ${formattedDate}`
         );
       }, delay);
@@ -58,11 +58,11 @@ class NotificationService {
     const now = new Date();
     if (reminderTime > now) {
       const delay = reminderTime.getTime() - now.getTime();
-      
+
       setTimeout(async () => {
         await this.sendPushNotification(
           appointment.patientId,
-          'Upcoming Appointment',
+          "Upcoming Appointment",
           `Your appointment is in 1 hour`
         );
       }, delay);

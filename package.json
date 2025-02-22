@@ -7,7 +7,7 @@
   "scripts": {
     "postinstall": "npx prisma generate",
     "compile": "tsc --watch",
-    "start:dev": "nodemon ./api/index.js"
+    "start:dev": "nodemon ./src/index.js"
   },
   "baseUrl": "src",
   "license": "ISC",
