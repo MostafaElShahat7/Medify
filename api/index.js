@@ -17,13 +17,13 @@ const routes = require("../src/routes");
 const app = express();
 
 // Setup Winston logging
-setupLogging();
+//setupLogging();
 
 // Initialize Firebase Admin SDK
-initializeFirebase();
+//initializeFirebase();
 
 // Create upload directories
-createUploadDirs();
+//createUploadDirs();
 
 // Basic middleware
 app.use(helmet());
@@ -45,7 +45,7 @@ app.use("/uploads", express.static(process.env.UPLOAD_PATH));
 app.use("/api", routes);
 
 // Error handling
-app.use(errorHandler);
+//app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("Welcome to the Medify API server!");
 });
