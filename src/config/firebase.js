@@ -12,6 +12,10 @@ const initializeFirebase = () => {
         })
       });
     } else {
+      /* const serviceAccount = require(path.join(__dirname, '../../firebase-credentials.json'));
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      }); */
     }
     console.log("Firebase Admin SDK initialized successfully");
   } catch (error) {
