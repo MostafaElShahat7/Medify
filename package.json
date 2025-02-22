@@ -7,13 +7,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "build": "npm install && prisma generate",
-    "test": "jest --detectOpenHandles --forceExit",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "reset-db": "node src/scripts/resetDb.js"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
