@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Medical assistance application backend",
   "author": "abdulrahmansaber120@gmail.com",
-  "main": "src/index.js",
+  "main": "api/index.js",
   "scripts": {
     "postinstall": "npx prisma generate",
     "compile": "tsc --watch",
@@ -11,11 +11,6 @@
   },
   "baseUrl": "src",
   "license": "ISC",
-  "paths": {
-    "@/*": [
-      "/*"
-    ]
-  },
   "dependencies": {
     "@prisma/client": "^5.7.1",
     "bcryptjs": "^2.4.3",
