@@ -5,13 +5,13 @@ const mongoose = require("mongoose");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-const appointmentRoutes = require("./routes/appointment.routes");
+const appointmentRoutes = require("../src/routes/appointment.routes");
 
-const { errorHandler } = require("./middleware/errorHandler");
-const { setupLogging } = require("./config/logging");
-const { initializeFirebase } = require("./config/firebase");
-const { createUploadDirs } = require("./config/upload");
-const routes = require("./routes");
+const { errorHandler } = require("../src/middleware/errorHandler");
+const { setupLogging } = require("../src/config/logging");
+const { initializeFirebase } = require("../src/config/firebase");
+const { createUploadDirs } = require("../src/config/upload");
+const routes = require("../src/routes");
 
 // Initialize Express app
 const app = express();
