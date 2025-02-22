@@ -4,10 +4,9 @@
   "description": "Medical assistance application backend",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "build": "npm install && prisma generate",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "compile": "tsc --watch",
+    "start:dev": "nodemon ./api/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
