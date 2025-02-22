@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model Admin {
+  id        String   @id @default(uuid()) @map("_id")
+  name      String
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Doctor {
+  id              String         @id @default(uuid()) @map("_id")
+  name            String
+  email           String         @unique
+  username        String         @unique
+  password        String
+  nationality     String
+  clinicName      String?
+  clinicAddress   String?
+  specialization  String
+  experienceYears Int
+  rating          Float          @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // Relations
+  availability    Availability[]
+  appointments    Appointment[]
+  posts           Post[]
+  favoredBy       FavoriteDoctor[]
+  reviews         Review[]
+}
+
+model Patient {
+  id              String         @id @default(uuid()) @map("_id")
+  name            String
+  email           String         @unique
+  username        String         @unique
+  password        String
+  dateOfBirth     DateTime
+  bloodType       BloodType?
+  height          Float?
+  weight          Float?
+  chronicCondition String?
+  diabetes        Boolean        @default(false)
+  heartRate       Int?
+  bmi             Float?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  appointments    Appointment[]
+  medicalHistory  MedicalHistory[]
+  favoriteDoctors FavoriteDoctor[]
+  reviews         Review[]
+}
+
+model Availability {
+  id        String   @id @default(uuid()) @map("_id")
+  doctorId  String
+  dayOfWeek WeekDay
+  startTime String
+  endTime   String
+  isBooked  Boolean  @default(false)
+  
+  // Relations
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, dayOfWeek, startTime])
+}
+
+model Appointment {
+  id             String            @id @default(uuid()) @map("_id")
+  patientId      String
+  doctorId       String
+  dateTime       DateTime
+  status         AppointmentStatus @default(UPCOMING)
+  reason         String?
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relations
+  patient        Patient           @relation(fields: [patientId], references: [id])
+  doctor         Doctor            @relation(fields: [doctorId], references: [id])
+  medicalReport  MedicalReport?
+}
+
+model MedicalHistory {
+  id          String    @id @default(uuid()) @map("_id")
+  patientId   String
+  type        String    // e.g., "X-Ray", "Lab Test", "Consultation"
+  date        DateTime
+  diagnosis   String?
+  treatment   String?
+  notes       String?
+  attachments String[]  // URLs to stored files
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  patient     Patient   @relation(fields: [patientId], references: [id])
+}
+
+model Post {
+  id        String   @id @default(uuid()) @map("_id")
+  doctorId  String
+  content   String
+  image     String?
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+}
+
+model FavoriteDoctor {
+  id        String   @id @default(uuid()) @map("_id")
+  patientId String
+  doctorId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId])
+}
+
+model Review {
+  id        String   @id @default(uuid()) @map("_id")
+  patientId String
+  doctorId  String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([patientId, doctorId])
+}
+
+model MedicalReport {
+  id            String    @id @default(uuid()) @map("_id")
+  appointmentId String    @unique
+  diagnosis     String
+  prescription  String?
+  notes         String?
+  attachments   String[]  // URLs to stored files
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AppointmentStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
