@@ -1,22 +1,37 @@
 const Message = require('../models/message.model');
-// const User = require('../models/user.model');
+const Doctor = require('../models/doctor.model');
+const Patient = require('../models/patient.model');
 const { messageSchema } = require('../validators/message.validator');
 const { NotificationService } = require('../services/notification.service');
+const mongoose = require('mongoose');
 
 const sendMessage = async (req, res) => {
   try {
     await messageSchema.validate(req.body);
+    const { receiverId, content } = req.body;
 
-    // Check if receiver exists
-    const receiver = await User.findById(req.body.receiverId);
+    // تحديد نوع المرسل (دكتور أم مريض)
+    const senderModel = req.user.role === 'doctor' ? 'Doctor' : 'Patient';
+    
+    // البحث عن المستقبل في كلا الجدولين
+    let receiver = await Doctor.findById(receiverId);
+    let receiverModel = 'Doctor';
+    
     if (!receiver) {
-      return res.status(404).json({ message: 'Receiver not found' });
+      receiver = await Patient.findById(receiverId);
+      receiverModel = 'Patient';
+      
+      if (!receiver) {
+        return res.status(404).json({ message: 'Receiver not found' });
+      }
     }
 
     const message = new Message({
-      senderId: req.user.id,
-      receiverId: req.body.receiverId,
-      content: req.body.content,
+      senderId: req.user._doc._id,
+      senderModel,
+      receiverId,
+      receiverModel,
+      content,
       attachments: req.files?.map(file => ({
         filename: file.originalname,
         path: file.path,
@@ -25,27 +40,41 @@ const sendMessage = async (req, res) => {
     });
 
     await message.save();
-
-    // Send notification
-    await NotificationService.sendMessageNotification(message);
+    //هبقا اضيفها بعدين 
+    // // إرسال إشعار
+    // await NotificationService.sendPushNotification(
+    //   receiverId,
+    //   'New Message',
+    //   `You have a new message from ${req.user._doc.name}`
+    // );
 
     res.status(201).json({
       message: 'Message sent successfully',
       data: message
     });
   } catch (error) {
+    console.error('Send Message Error:', error);
     res.status(400).json({ message: error.message });
   }
 };
 
 const getConversations = async (req, res) => {
   try {
+    const userId = req.user._doc._id;
+    const userModel = req.user.role === 'doctor' ? 'Doctor' : 'Patient';
+
     const conversations = await Message.aggregate([
       {
         $match: {
           $or: [
-            { senderId: req.user.id },
-            { receiverId: req.user.id }
+            { 
+              senderId: new mongoose.Types.ObjectId(userId), 
+              senderModel: userModel 
+            },
+            { 
+              receiverId: new mongoose.Types.ObjectId(userId), 
+              receiverModel: userModel 
+            }
           ]
         }
       },
@@ -56,40 +85,47 @@ const getConversations = async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$senderId', req.user.id] },
-              '$receiverId',
-              '$senderId'
+              { $eq: ['$senderId', new mongoose.Types.ObjectId(userId)] },
+              { id: '$receiverId', model: '$receiverModel' },
+              { id: '$senderId', model: '$senderModel' }
             ]
           },
-          lastMessage: { $first: '$$ROOT' }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $project: {
-          user: {
-            _id: 1,
-            name: 1,
-            role: 1
-          },
-          lastMessage: 1,
-          unreadCount: 1
+          lastMessage: { $first: '$$ROOT' },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                { 
+                  $and: [
+                    { $eq: ['$receiverId', new mongoose.Types.ObjectId(userId)] },
+                    { $eq: ['$read', false] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
         }
       }
     ]);
 
+    // إضافة معلومات المستخدم الآخر
+    for (let conv of conversations) {
+      const Model = mongoose.model(conv._id.model);
+      const otherUser = await Model.findById(conv._id.id);
+      if (otherUser) {
+        conv.user = {
+          _id: otherUser._id,
+          name: otherUser.name,
+          role: conv._id.model.toLowerCase()
+        };
+      }
+    }
+
     res.json(conversations);
   } catch (error) {
+    console.error('Get Conversations Error:', error);
+    console.error('Error details:', error.stack);
     res.status(500).json({ message: error.message });
   }
 };
@@ -97,20 +133,32 @@ const getConversations = async (req, res) => {
 const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
+    const currentUserId = req.user._doc._id;
+    const currentUserModel = req.user.role === 'doctor' ? 'Doctor' : 'Patient';
+
     const messages = await Message.find({
       $or: [
-        { senderId: req.user._id, receiverId: userId },
-        { senderId: userId, receiverId: req.user.id }
+        { 
+          senderId: currentUserId, 
+          receiverId: userId,
+          senderModel: currentUserModel
+        },
+        { 
+          senderId: userId, 
+          receiverId: currentUserId,
+          receiverModel: currentUserModel
+        }
       ]
     })
     .sort({ createdAt: -1 })
     .limit(50);
 
-    // Mark messages as read
+    // تحديث حالة القراءة
     await Message.updateMany(
       {
         senderId: userId,
-        receiverId: req.user.id,
+        receiverId: currentUserId,
+        receiverModel: currentUserModel,
         read: false
       },
       { read: true }
@@ -118,6 +166,7 @@ const getMessages = async (req, res) => {
 
     res.json(messages.reverse());
   } catch (error) {
+    console.error('Get Messages Error:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -125,12 +174,14 @@ const getMessages = async (req, res) => {
 const getUnreadCount = async (req, res) => {
   try {
     const count = await Message.countDocuments({
-      receiverId: req.user._id,
+      receiverId: req.user._doc._id,
+      receiverModel: req.user.role === 'doctor' ? 'Doctor' : 'Patient',
       read: false
     });
 
     res.json({ unreadCount: count });
   } catch (error) {
+    console.error('Get Unread Count Error:', error);
     res.status(500).json({ message: error.message });
   }
 };

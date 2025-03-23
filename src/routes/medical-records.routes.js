@@ -40,7 +40,7 @@ router.get("/reports", authorize("doctor", "patient"), getMedicalReports);
 
 // Prescriptions routes
 router.post("/prescriptions", authorize("doctor"), createPrescription);
-router.get("/prescriptions", authorize("doctor", "patient"), getPrescriptions);
-router.patch("/prescriptions/:id", authorize("doctor"), updatePrescription);
+router.get("/prescriptions", authorize("doctor", "patient"), getPrescriptions); // تأكد من تفعيل هذا المسار
+router.put("/prescriptions/:id", authorize("doctor"), updatePrescription);
 
 module.exports = router;

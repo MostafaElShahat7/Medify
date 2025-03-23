@@ -1,25 +1,50 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const medicalRecordSchema = new mongoose.Schema({
-  patientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Patient',
-    required: true
+const medicalRecordSchema = new mongoose.Schema(
+  {
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient",
+      required: true,
+    },
+    doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor",
+      required: true,
+    },
+    diagnosis: {
+      type: String,
+      required: true,
+    },
+    symptoms: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+    type: {
+      type: String,
+      required: true,
+      enum: ["checkup", "follow-up", "emergency", "consultation"],
+    },
+    date: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    treatment: String,
+    notes: String,
+    attachments: [
+      {
+        filename: String,
+        path: String,
+        mimetype: String,
+      },
+    ],
   },
-  type: {
-    type: String,
-    required: true
-  },
-  date: {
-    type: Date,
-    required: true
-  },
-  diagnosis: String,
-  treatment: String,
-  notes: String,
-  attachments: [String]
-}, {
-  timestamps: true
-});
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model('MedicalRecord', medicalRecordSchema);
+module.exports = mongoose.model("MedicalRecord", medicalRecordSchema);

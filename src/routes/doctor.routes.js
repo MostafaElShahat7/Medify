@@ -14,8 +14,12 @@ const {
   getDoctorPatients,
   createPost,
   updatePost,
-  deletePost
+  deletePost,
+  getDoctorPublicProfile,
 } = require("../controllers/doctor.controller");
+
+// Add this new route BEFORE the authentication middleware
+router.get("/public-profile/:doctorId", getDoctorPublicProfile);
 
 // // Configure multer for file uploads
 // const storage = multer.diskStorage({
@@ -46,8 +50,8 @@ router.put("/availability", authorize("doctor"), updateAvailability);
 router.get("/patients", authorize("doctor"), getDoctorPatients);
 
 // Posts management
-router.post('/posts', authorize('doctor'), createPost);
-router.put('/posts/:id', authorize('doctor'), updatePost);
-router.delete('/posts/:id', authorize('doctor'), deletePost);
+router.post("/posts", authorize("doctor"), createPost);
+router.put("/posts/:id", authorize("doctor"), updatePost);
+router.delete("/posts/:id", authorize("doctor"), deletePost);
 
 module.exports = router;
