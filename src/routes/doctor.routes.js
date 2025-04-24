@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-// const multer = require('multer');
+const multer = require('multer');
 const {
   authenticateDoctor,
   authorize,
@@ -21,18 +21,25 @@ const {
 // Add this new route BEFORE the authentication middleware
 router.get("/public-profile/:doctorId", getDoctorPublicProfile);
 
-// // Configure multer for file uploads
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'uploads/posts');
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-//     cb(null, `${uniqueSuffix}-${file.originalname}`);
-//   }
-// });
+// Configure multer to store files in memory
+const storage = multer.memoryStorage();
 
-// const upload = multer({ storage });
+// Add file filter to only allow images
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // All routes require authentication
 router.use(authenticateDoctor);
@@ -50,8 +57,8 @@ router.put("/availability", authorize("doctor"), updateAvailability);
 router.get("/patients", authorize("doctor"), getDoctorPatients);
 
 // Posts management
-router.post("/posts", authorize("doctor"), createPost);
-router.put("/posts/:id", authorize("doctor"), updatePost);
+router.post("/posts", authorize("doctor"), upload.single('image'), createPost);
+router.put("/posts/:id", authorize("doctor"), upload.single('image'), updatePost);
 router.delete("/posts/:id", authorize("doctor"), deletePost);
 
 module.exports = router;

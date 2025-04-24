@@ -1,3 +1,4 @@
+const { put, del } = require('@vercel/blob');
 const Doctor = require("../models/doctor.model");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -114,72 +115,141 @@ const getDoctorPatients = catchAsync(async (req, res) => {
 });
 
 const createPost = async (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const doctorId = decoded.id;
-
-  const postData = {
-    doctorId: doctorId,
-    title: req.body.title,
-    content: req.body.content,
-  };
-
   try {
+    const doctorId = req.user._doc._id;
+    
+    const postData = {
+      doctorId: doctorId,
+      content: req.body.content,
+    };
+
+    // Handle image upload to Vercel Blob if image exists
+    if (req.file) {
+      try {
+        // Create a unique filename
+        const timestamp = Date.now();
+        const uniqueFilename = `${timestamp}-${req.file.originalname}`;
+        
+        const blob = await put(uniqueFilename, req.file.buffer, {
+          access: 'public',
+          addRandomSuffix: true
+        });
+        
+        postData.image = blob.url;
+      } catch (uploadError) {
+        console.error("Error uploading to Vercel Blob:", uploadError);
+        return res.status(500).json({ 
+          message: "Error uploading image",
+          error: uploadError.message 
+        });
+      }
+    }
+
     const newPost = new Post(postData);
     await newPost.save();
-    res.status(201).json(newPost);
+    
+    res.status(201).json({
+      message: "Post created successfully",
+      post: newPost
+    });
   } catch (error) {
-    res.status(500).send("Error creating post: " + error.message);
+    console.error("Error creating post:", error);
+    res.status(500).json({ message: error.message });
   }
 };
+
 const updatePost = async (req, res) => {
   try {
-    const { id } = req.params; // معرف المنشور
-    const { content, image } = req.body;
-    const doctorId = req.user._doc._id; // معرف الدكتور من التوكن
+    const { id } = req.params;
+    const { content, removeImage } = req.body;
+    const doctorId = req.user._doc._id;
 
-    // البحث عن المنشور
+    // Validate post ID
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        message: "Invalid post ID format",
+        providedId: id 
+      });
+    }
+
+    // Find the post
     const post = await Post.findById(id);
 
-    // التحقق من وجود المنشور
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // التحقق من أن الدكتور هو صاحب المنشور
+    // Check if the doctor owns the post
     if (post.doctorId.toString() !== doctorId.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this post" });
+      return res.status(403).json({ message: "Not authorized to update this post" });
     }
 
-    // التحقق من وجود محتوى للتحديث
-    if (!content && !image) {
-      return res
-        .status(400)
-        .json({ message: "No content provided for update" });
-    }
-
-    // تحديث المحتوى إذا تم توفيره
+    // Update the post data
     if (content) {
       post.content = content;
     }
 
-    // تحديث الصورة إذا تم توفيرها
-    if (image) {
-      post.image = image;
+    // Handle image removal if requested
+    if (removeImage === 'true' && post.image) {
+      try {
+        // Extract blob path from URL
+        const oldBlobPath = new URL(post.image).pathname.split('/').pop();
+        await del(oldBlobPath);
+        post.image = null; // Remove image reference from post
+      } catch (deleteError) {
+        console.error("Error deleting image:", deleteError);
+        return res.status(500).json({ 
+          message: "Error deleting image",
+          error: deleteError.message 
+        });
+      }
+    }
+    // Handle new image upload if exists
+    else if (req.file) {
+      try {
+        // Delete old image if exists
+        if (post.image) {
+          // Extract blob path from URL
+          const oldBlobPath = new URL(post.image).pathname.split('/').pop();
+          try {
+            await del(oldBlobPath);
+          } catch (deleteError) {
+            console.error("Error deleting old image:", deleteError);
+          }
+        }
+
+        // Create a unique filename
+        const timestamp = Date.now();
+        const uniqueFilename = `${timestamp}-${req.file.originalname}`;
+
+        // Upload new image
+        const blob = await put(uniqueFilename, req.file.buffer, {
+          access: 'public',
+          addRandomSuffix: true
+        });
+        
+        post.image = blob.url;
+      } catch (uploadError) {
+        console.error("Error uploading to Vercel Blob:", uploadError);
+        return res.status(500).json({ 
+          message: "Error uploading new image",
+          error: uploadError.message 
+        });
+      }
     }
 
-    // حفظ التغييرات
     await post.save();
 
     res.json({
       message: "Post updated successfully",
-      post,
+      post
     });
   } catch (error) {
     console.error("Error updating post:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      details: "Make sure you're providing a valid post ID in the URL"
+    });
   }
 };
 
