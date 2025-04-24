@@ -14,17 +14,18 @@ const authenticateDoctor = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token, process.env.JWT_SECRET);
 
-    const user = await Doctor.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
+    const doctor = await Doctor.findById(decoded.id);
+    if (!doctor) {
+      return res.status(401).json({ message: "Doctor not found" });
     }
 
-    req.user = {
-      ...user,
-      role: "doctor"
-    };
+    // Set the complete doctor object
+    req.user = doctor;
+    req.user.role = "doctor";
+    
     next();
   } catch (error) {
+    console.error("Authentication error:", error);
     res.status(401).json({ message: "Invalid token" });
   }
 };

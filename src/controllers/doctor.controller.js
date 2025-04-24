@@ -120,10 +120,20 @@ const createPost = async (req, res) => {
     console.log('Request Body:', req.body);
     console.log('Content:', req.body.content);
     console.log('File:', req.file);
+    console.log('User:', req.user);
     console.log('========================');
 
-    const doctorId = req.user._doc._id;
+    // Fix: Get doctorId correctly from user object
+    const doctorId = req.user._id || req.user._doc._id;
     
+    if (!doctorId) {
+      console.error('Doctor ID not found in:', req.user);
+      return res.status(400).json({
+        message: "Could not determine doctor ID",
+        user: req.user
+      });
+    }
+
     const postData = {
       doctorId: doctorId,
       content: req.body.content
@@ -150,6 +160,7 @@ const createPost = async (req, res) => {
       }
     }
 
+    console.log('Creating post with data:', postData);
     const newPost = new Post(postData);
     await newPost.save();
     
