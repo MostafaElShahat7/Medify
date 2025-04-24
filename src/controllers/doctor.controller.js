@@ -116,29 +116,42 @@ const getDoctorPatients = catchAsync(async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
+    console.log('=== Request Debug Info ===');
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Files:', req.files);
+    console.log('Fields:', req.fields);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('=========================');
+
     const doctorId = req.user._doc._id;
     
-    // Ensure content exists in the request
-    if (!req.body.content) {
+    // Get content from either body or fields
+    const content = req.body.content || (req.fields && req.fields.content);
+    
+    if (!content) {
       return res.status(400).json({ 
         message: "Post content is required",
-        receivedBody: req.body
+        receivedBody: req.body,
+        receivedFields: req.fields,
+        contentType: req.headers['content-type']
       });
     }
 
     const postData = {
       doctorId: doctorId,
-      content: req.body.content
+      content: content
     };
 
     // Handle image upload to Vercel Blob if image exists
-    if (req.file) {
+    const imageFile = req.files && req.files.image && req.files.image[0];
+    if (imageFile) {
       try {
         // Create a unique filename
         const timestamp = Date.now();
-        const uniqueFilename = `${timestamp}-${req.file.originalname}`;
+        const uniqueFilename = `${timestamp}-${imageFile.originalname}`;
         
-        const blob = await put(uniqueFilename, req.file.buffer, {
+        const blob = await put(uniqueFilename, imageFile.buffer, {
           access: 'public',
           addRandomSuffix: true
         });

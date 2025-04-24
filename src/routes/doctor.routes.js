@@ -51,13 +51,40 @@ router.put("/profile", authorize("doctor"), updateDoctorProfile);
 
 // Availability management
 router.get("/availability", authorize("doctor"), getDoctorAvailability);
-router.put("/availability", authorize("doctor"), updateAvailability);
+router.post("/availability", authorize("doctor"), updateAvailability);
 
 // Patient management
 router.get("/patients", authorize("doctor"), getDoctorPatients);
 
 // Posts management
-router.post("/posts", authorize("doctor"), upload.single('image'), createPost);
+const handlePostUpload = upload.fields([
+  { name: 'content', maxCount: 1 },
+  { name: 'image', maxCount: 1 }
+]);
+
+router.post("/posts", authorize("doctor"), (req, res, next) => {
+  handlePostUpload(req, res, function(err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ 
+        message: "File upload error", 
+        error: err.message,
+        type: 'MulterError'
+      });
+    } else if (err) {
+      return res.status(400).json({ 
+        message: "Unknown error", 
+        error: err.message,
+        type: 'UnknownError'
+      });
+    }
+    // Add the content from fields to body if it exists
+    if (req.body && !req.body.content && req.fields && req.fields.content) {
+      req.body.content = req.fields.content;
+    }
+    next();
+  });
+}, createPost);
+
 router.put("/posts/:id", authorize("doctor"), upload.single('image'), updatePost);
 router.delete("/posts/:id", authorize("doctor"), deletePost);
 
