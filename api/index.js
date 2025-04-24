@@ -6,27 +6,16 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const appointmentRoutes = require("../src/routes/appointment.routes");
-
 const { errorHandler } = require("../src/middleware/errorHandler");
-const { setupLogging } = require("../src/config/logging");
-const { initializeFirebase } = require("../src/config/firebase");
-const { createUploadDirs } = require("../src/config/upload");
 const routes = require("../src/routes");
 
 // Initialize Express app
 const app = express();
 
-// Setup Winston logging
-//setupLogging();
-
-// Initialize Firebase Admin SDK
-//initializeFirebase();
-
-// Create upload directories
-//createUploadDirs();
-
 // Basic middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,20 +27,17 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Serve uploaded files
-app.use("/uploads", express.static(process.env.UPLOAD_PATH));
-
 // Routes
 app.use("/api", routes);
+app.use("/api", appointmentRoutes);
 
 // Error handling
-//app.use(errorHandler);
+app.use(errorHandler);
+
+// Welcome route
 app.get("/", (req, res) => {
   res.send("Welcome to the Medify API server!");
 });
-
-// Use appointment routes
-app.use("/api", appointmentRoutes);
 
 // MongoDB connection
 mongoose
@@ -63,7 +49,6 @@ mongoose
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
