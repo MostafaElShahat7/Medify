@@ -118,9 +118,17 @@ const createPost = async (req, res) => {
   try {
     const doctorId = req.user._doc._id;
     
+    // Ensure content exists in the request
+    if (!req.body.content) {
+      return res.status(400).json({ 
+        message: "Post content is required",
+        receivedBody: req.body
+      });
+    }
+
     const postData = {
       doctorId: doctorId,
-      content: req.body.content,
+      content: req.body.content
     };
 
     // Handle image upload to Vercel Blob if image exists
@@ -154,7 +162,11 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating post:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: "Error creating post",
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
