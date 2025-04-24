@@ -116,42 +116,26 @@ const getDoctorPatients = catchAsync(async (req, res) => {
 
 const createPost = async (req, res) => {
   try {
-    console.log('=== Request Debug Info ===');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    console.log('Files:', req.files);
-    console.log('Fields:', req.fields);
-    console.log('Content-Type:', req.headers['content-type']);
-    console.log('=========================');
+    console.log('=== Create Post Debug ===');
+    console.log('Request Body:', req.body);
+    console.log('Content:', req.body.content);
+    console.log('File:', req.file);
+    console.log('========================');
 
     const doctorId = req.user._doc._id;
     
-    // Get content from either body or fields
-    const content = req.body.content || (req.fields && req.fields.content);
-    
-    if (!content) {
-      return res.status(400).json({ 
-        message: "Post content is required",
-        receivedBody: req.body,
-        receivedFields: req.fields,
-        contentType: req.headers['content-type']
-      });
-    }
-
     const postData = {
       doctorId: doctorId,
-      content: content
+      content: req.body.content
     };
 
-    // Handle image upload to Vercel Blob if image exists
-    const imageFile = req.files && req.files.image && req.files.image[0];
-    if (imageFile) {
+    // Handle image upload if exists
+    if (req.file) {
       try {
-        // Create a unique filename
         const timestamp = Date.now();
-        const uniqueFilename = `${timestamp}-${imageFile.originalname}`;
+        const uniqueFilename = `${timestamp}-${req.file.originalname}`;
         
-        const blob = await put(uniqueFilename, imageFile.buffer, {
+        const blob = await put(uniqueFilename, req.file.buffer, {
           access: 'public',
           addRandomSuffix: true
         });
@@ -177,8 +161,7 @@ const createPost = async (req, res) => {
     console.error("Error creating post:", error);
     res.status(500).json({ 
       message: "Error creating post",
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: error.message
     });
   }
 };
