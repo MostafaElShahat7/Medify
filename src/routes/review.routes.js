@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-  authenticateDoctor,
+  authenticatePatient,
   authorize,
 } = require("../middleware/auth.middleware");
 const {
@@ -11,7 +11,7 @@ const {
   deleteReview,
 } = require("../controllers/review.controller");
 
-router.use(authenticateDoctor);
+router.use(authenticatePatient);
 
 router.post("/:doctorId", authorize("patient"), createReview);
 router.get("/doctor/:doctorId", getDoctorReviews);

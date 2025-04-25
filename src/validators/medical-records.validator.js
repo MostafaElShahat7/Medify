@@ -1,9 +1,14 @@
 const yup = require('yup');
 
 const medicalReportSchema = yup.object({
+  patientId: yup.string().required('Patient ID is required'),
   appointmentId: yup.string(),
   diagnosis: yup.string().required('Diagnosis is required'),
   symptoms: yup.array().of(yup.string()).min(1, 'At least one symptom is required'),
+  type: yup.string()
+    .oneOf(['checkup', 'follow-up', 'emergency', 'consultation'], 'Invalid report type')
+    .required('Report type is required'),
+  treatment: yup.string().required('Treatment is required'),
   notes: yup.string(),
   recommendations: yup.string()
 });

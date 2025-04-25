@@ -6,6 +6,7 @@ const {
   updatePrescriptionSchema,
 } = require("../validators/medical-records.validator");
 const { NotificationService } = require("../services/notification.service");
+const Patient = require("../models/patient.model");
 
 // Medical Reports Controllers
 const createMedicalReport = async (req, res) => {
@@ -21,6 +22,15 @@ const createMedicalReport = async (req, res) => {
     }
 
     const doctorId = userData._id.toString();
+
+    // Verify patient exists
+    const patient = await Patient.findById(req.body.patientId);
+    if (!patient) {
+      return res.status(404).json({
+        message: "Patient not found",
+        debug: { patientId: req.body.patientId }
+      });
+    }
 
     // Parse symptoms if they're received as a string
     if (typeof req.body.symptoms === "string") {
@@ -38,6 +48,7 @@ const createMedicalReport = async (req, res) => {
     const reportData = {
       ...req.body,
       doctorId: doctorId,
+      patientId: req.body.patientId, // Make sure patientId is explicitly set
       date: new Date(),
       attachments:
         req.files?.map((file) => ({
@@ -55,16 +66,10 @@ const createMedicalReport = async (req, res) => {
     const report = new MedicalReport(reportData);
     await report.save();
 
+    // Populate with explicit select fields
     const populatedReport = await MedicalReport.findById(report._id)
       .populate("doctorId", "name specialization")
-      .populate("patientId", "name");
-
-    //هبقا اضيفها بعدين
-    // // Send notification
-    // await NotificationService.sendMedicalReportNotification(
-    //   populatedReport,
-    //   "New medical report available"
-    // );
+      .populate("patientId", "name email");
 
     res.status(201).json({
       message: "Medical report created successfully",
@@ -73,13 +78,16 @@ const createMedicalReport = async (req, res) => {
   } catch (error) {
     console.error("Error creating medical report:", {
       error,
-      userDoc: req.user?._doc,
-      userId: req.user?._doc?._id,
+      requestBody: req.body,
+      patientId: req.body.patientId
     });
     res.status(400).json({
       message: error.message,
       errors: error.errors || [],
-      debug: { userInfo: req.user ? "exists" : "missing" },
+      debug: { 
+        userInfo: req.user ? "exists" : "missing",
+        patientId: req.body.patientId
+      },
     });
   }
 };

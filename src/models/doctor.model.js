@@ -66,13 +66,16 @@ const doctorSchema = new mongoose.Schema(
             "SUNDAY",
           ],
         },
-        
         startTime: String,
         endTime: String,
-        isBooked: {
-          type: Boolean,
-          default: false,
-        },
+        bookedSlots: [{
+          startTime: String,
+          endTime: String,
+          appointmentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Appointment'
+          }
+        }]
       },
     ],
     resetToken: String,
