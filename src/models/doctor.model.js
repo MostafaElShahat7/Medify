@@ -79,6 +79,10 @@ const doctorSchema = new mongoose.Schema(
       },
     ],
     resetToken: String,
+    otp: {
+      code: String,
+      expiresAt: Date
+    },
   },
   {
     timestamps: true,

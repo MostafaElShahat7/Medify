@@ -123,6 +123,11 @@ const login = async (req, res) => {
   }
 };
 
+// Generate a random 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 const requestPasswordReset = async (req, res) => {
   try {
     const { email, role } = req.body;
@@ -134,28 +139,30 @@ const requestPasswordReset = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate reset token
-    const resetToken = jwt.sign(
-      { id: user._id, role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpiresAt = new Date();
+    otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 10); // OTP expires in 10 minutes
 
-    // Save reset token hash
-    user.resetToken = resetToken;
+    // Save OTP to user
+    user.otp = {
+      code: otp,
+      expiresAt: otpExpiresAt
+    };
     await user.save();
 
-    // Send reset email
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    // Send OTP email
     await sendEmail(
       email,
-      "Password Reset Request",
-      `Click the following link to reset your password: ${resetUrl}`
+      "Password Reset OTP",
+      `Your OTP for password reset is: ${otp}\nThis code will expire in 10 minutes.`
     );
 
-    res.json({ message: "Password reset email sent" });
+    res.json({ 
+      message: "OTP sent to your email",
+      email: email,
+      role: role
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -163,23 +170,33 @@ const requestPasswordReset = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const Model = getModel(decoded.role);
+    const { email, otp, newPassword, role } = req.body;
+    const Model = getModel(role);
 
     // Find user
-    const user = await Model.findById(decoded.id);
-    if (!user || user.resetToken !== token) {
-      return res
-        .status(400)
-        .json({ message: "Invalid or expired reset token" });
+    const user = await Model.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if OTP exists and is valid
+    if (!user.otp || !user.otp.code || !user.otp.expiresAt) {
+      return res.status(400).json({ message: "No OTP requested" });
+    }
+
+    // Check if OTP is expired
+    if (new Date() > user.otp.expiresAt) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Verify OTP
+    if (user.otp.code !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     // Update password
     user.password = newPassword;
-    user.resetToken = undefined;
+    user.otp = undefined; // Clear OTP after successful password reset
     await user.save();
 
     res.json({ message: "Password reset successful" });
