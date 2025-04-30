@@ -154,8 +154,21 @@ const requestPasswordReset = async (req, res) => {
     // Send OTP email
     await sendEmail(
       email,
-      "Password Reset OTP",
-      `Your OTP for password reset is: ${otp}\nThis code will expire in 10 minutes.`
+      "Medify – Verification Code",
+      `Hello,
+
+We've received a request to sign in to your Medify account.
+To complete the process, please enter the verification code below:
+
+Your Code: ${otp}
+Note: This code is valid for 10 minutes only.
+
+Security Reminder:
+For your protection, do not share this code with anyone, including Medify support staff.
+If you didn't request this code, you can safely ignore this message — no changes have been made to your account.
+
+Thank you for choosing Medify.
+Your health, your control.`
     );
 
     res.json({ 
