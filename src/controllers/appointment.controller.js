@@ -132,23 +132,57 @@ const isTimeWithinRange = (time, startTime, endTime) => {
 
 const getAppointments = async (req, res) => {
   try {
-    const query = req.user.role === 'doctor' 
-    ? { doctorId: req.user._doc._id }  // للدكتور
-    : { patientId: req.user._doc._id }; // للمريض
+    // تحديد نوع المستخدم والمعرف بشكل صحيح
+    console.log('User role:', req.user.role);
+    
+    let userId;
+    let query;
+    
+    if (req.user.role === 'doctor') {
+      // للدكتور: قد يكون المعرف في أماكن مختلفة حسب كيفية تعيين كائن المستخدم
+      userId = req.user._id || (req.user._doc && req.user._doc._id);
+      
+      if (!userId) {
+        console.error('Doctor ID not found in user object:', req.user);
+        return res.status(400).json({ message: 'Doctor ID not found' });
+      }
+      
+      query = { doctorId: userId };
+    } else {
+      // للمريض: عادة ما يكون المعرف في req.user._doc._id
+      userId = (req.user._doc && req.user._doc._id) || req.user._id;
+      
+      if (!userId) {
+        console.error('Patient ID not found in user object:', req.user);
+        return res.status(400).json({ message: 'Patient ID not found' });
+      }
+      
+      query = { patientId: userId };
+    }
 
-    console.log('Query:', query); // للتحقق من القيم
-    console.log('User Role:', req.user.role);
-    console.log('User ID:', req.user._doc._id);
+    console.log(`Finding appointments for ${req.user.role} with ID:`, userId);
+    console.log('Query:', query);
 
     const appointments = await Appointment.find(query)
       .populate('doctorId', 'name specialization')
       .populate('patientId', 'name')
       .sort({ date: 1 });
 
-      console.log('Found Appointments:', appointments); // للتحقق من النتائج
+    console.log(`Found ${appointments.length} appointments`);
     
-      res.json(appointments);
+    // تنظيم المواعيد حسب الحالة
+    const upcomingAppointments = appointments.filter(app => app.status === 'UPCOMING');
+    const completedAppointments = appointments.filter(app => app.status === 'COMPLETED');
+    const cancelledAppointments = appointments.filter(app => app.status === 'CANCELLED');
+    
+    // إرجاع المواعيد منظمة في مصفوفات منفصلة
+    res.json({
+      upcoming: upcomingAppointments,
+      completed: completedAppointments,
+      cancelled: cancelledAppointments
+    });
   } catch (error) {
+    console.error('Error in getAppointments:', error);
     res.status(500).json({ message: error.message });
   }
 };
