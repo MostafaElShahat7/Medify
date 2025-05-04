@@ -3,6 +3,7 @@ const Doctor = require("../models/doctor.model");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post.model");
+const Appointment = require("../models/appointment.model");
 const {
   doctorSchema,
   availabilitySchema,
@@ -164,9 +165,28 @@ const createPost = async (req, res) => {
     const newPost = new Post(postData);
     await newPost.save();
     
+    // Get the doctor name for the response
+    const doctor = await Doctor.findById(doctorId).select('name');
+    
+    // Create a new object with the populated post data
+    const populatedPost = newPost.toObject();
+    populatedPost.doctorName = doctor ? doctor.name : 'Unknown';
+    
+    // Format the date to be more readable
+    if (populatedPost.createdAt) {
+      const date = new Date(populatedPost.createdAt);
+      populatedPost.formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
     res.status(201).json({
       message: "Post created successfully",
-      post: newPost
+      post: populatedPost
     });
   } catch (error) {
     console.error("Error creating post:", error);
@@ -259,9 +279,28 @@ const updatePost = async (req, res) => {
 
     await post.save();
 
+    // Get the doctor name for the response
+    const doctor = await Doctor.findById(doctorId).select('name');
+    
+    // Create a new object with the populated post data
+    const populatedPost = post.toObject();
+    populatedPost.doctorName = doctor ? doctor.name : 'Unknown';
+
+    // Format the date to be more readable
+    if (populatedPost.createdAt) {
+      const date = new Date(populatedPost.createdAt);
+      populatedPost.formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
     res.json({
       message: "Post updated successfully",
-      post
+      post: populatedPost
     });
   } catch (error) {
     console.error("Error updating post:", error);
@@ -329,9 +368,29 @@ const getDoctorPublicProfile = catchAsync(async (req, res) => {
     .sort({ createdAt: -1 })
     .select("content image createdAt likes");
 
+  // Add the doctor name to each post
+  const postsWithDoctorName = posts.map(post => {
+    const postObj = post.toObject();
+    postObj.doctorName = doctor.name;
+    
+    // Format the date to be more readable
+    if (postObj.createdAt) {
+      const date = new Date(postObj.createdAt);
+      postObj.formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    return postObj;
+  });
+
   res.status(200).json({
     doctor,
-    posts,
+    posts: postsWithDoctorName,
   });
 });
 
