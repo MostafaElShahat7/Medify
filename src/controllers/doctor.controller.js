@@ -394,6 +394,29 @@ const getDoctorPublicProfile = catchAsync(async (req, res) => {
   });
 });
 
+// Get doctor availability by ID (for patients to view)
+const getDoctorAvailabilityById = catchAsync(async (req, res) => {
+  const { doctorId } = req.params;
+
+  try {
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    
+    res.status(200).json({
+      doctorId: doctor._id,
+      doctorName: doctor.name,
+      availability: doctor.availability
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error retrieving doctor availability", 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = {
   createDoctorProfile,
   getDoctorProfile,
@@ -405,4 +428,5 @@ module.exports = {
   updatePost,
   deletePost,
   getDoctorPublicProfile,
+  getDoctorAvailabilityById,
 };
