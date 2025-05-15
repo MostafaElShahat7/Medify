@@ -417,6 +417,57 @@ const getDoctorAvailabilityById = catchAsync(async (req, res) => {
   }
 });
 
+// New function to get all posts from all doctors
+const getAllPosts = async (req, res) => {
+  try {
+    // Fetch all posts and sort by newest first
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('doctorId', 'name specialty profilePicture');
+    
+    // Format posts with doctor information
+    const formattedPosts = posts.map(post => {
+      const formattedPost = post.toObject();
+      
+      // Add doctor information
+      if (post.doctorId) {
+        formattedPost.doctorName = post.doctorId.name || 'Unknown';
+        formattedPost.doctorSpecialty = post.doctorId.specialty || '';
+        formattedPost.doctorProfilePicture = post.doctorId.profilePicture || null;
+      } else {
+        formattedPost.doctorName = 'Unknown';
+        formattedPost.doctorSpecialty = '';
+        formattedPost.doctorProfilePicture = null;
+      }
+      
+      // Format date
+      if (formattedPost.createdAt) {
+        const date = new Date(formattedPost.createdAt);
+        formattedPost.formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+      
+      return formattedPost;
+    });
+    
+    res.status(200).json({
+      message: "Posts retrieved successfully",
+      posts: formattedPosts
+    });
+  } catch (error) {
+    console.error("Error retrieving posts:", error);
+    res.status(500).json({ 
+      message: "Error retrieving posts",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createDoctorProfile,
   getDoctorProfile,
@@ -429,4 +480,5 @@ module.exports = {
   deletePost,
   getDoctorPublicProfile,
   getDoctorAvailabilityById,
+  getAllPosts
 };

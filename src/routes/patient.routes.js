@@ -14,6 +14,7 @@ const {
   getFavorites,
   removeFromFavorites
 } = require("../controllers/patient.controller");
+const { getAllPosts } = require("../controllers/doctor.controller");
 
 // All routes require authentication and patient role
 router.use(authenticatePatient);
@@ -32,5 +33,8 @@ router.get("/medical-history", getMedicalHistory);
 router.post('/favorites/:doctorId', addToFavorites);
 router.get('/favorites', getFavorites);
 router.delete('/favorites/:doctorId', removeFromFavorites);
+
+// Social posts route
+router.get('/social-posts', getAllPosts);
 
 module.exports = router;
