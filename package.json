@@ -2,12 +2,13 @@
     "name": "medify-backend",
     "version": "1.0.0",
     "description": "Medical assistance application backend",
-    "author": "abdulrahmansaber120@gmail.com",
+    "author": "mostafaelshahat194@gmail.com",
     "main": "api/index.js",
     "scripts": {
         "postinstall": "npx prisma generate",
         "compile": "tsc --watch",
-        "start:dev": "nodemon ./src/index.js"
+        "start:dev": "nodemon ./src/index.js",
+        "start": "node api/index.js"
     },
     "baseUrl": "src",
     "license": "ISC",

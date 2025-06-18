@@ -105,13 +105,13 @@ const createAppointment = async (req, res) => {
   }
 };
 
-// دالة مساعدة لتحويل الوقت إلى دقائق
+// convirt time into minutes
 const convertTimeToMinutes = (time) => {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
 };
 
-// دالة مساعدة لإضافة دقائق إلى وقت
+
 const addMinutesToTime = (time, minutesToAdd) => {
   let [hours, minutes] = time.split(':').map(Number);
   minutes += minutesToAdd;
@@ -121,7 +121,7 @@ const addMinutesToTime = (time, minutesToAdd) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
-// دالة مساعدة للتحقق من أن الوقت يقع ضمن النطاق المتاح
+
 const isTimeWithinRange = (time, startTime, endTime) => {
   const timeInMinutes = convertTimeToMinutes(time);
   const startInMinutes = convertTimeToMinutes(startTime);

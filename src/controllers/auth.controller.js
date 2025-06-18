@@ -22,44 +22,30 @@ const register = async (req, res) => {
       const { role, ...userData } = req.body;
       const Model = getModel(role);
 
-      // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل في نموذج الدكتور
+      // Check if the email already exists in the doctor's form.
       const existingDoctor = await Doctor.findOne({ email: userData.email });
       if (existingDoctor) {
           return res.status(400).json({ message: 'Email is already in use ' });
       }
-
-      // تحقق مما إذا كان البريد الإلكتروني موجودًا بالفعل في نموذج المريض
+      // Check if the email already exists in the patient's form.
       const existingPatient = await Patient.findOne({ email: userData.email });
       if (existingPatient) {
           return res.status(400).json({ message: 'Email is already in use ' });
       }
-
-      // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل في نموذج الدكتور
+      // Check if the username already exists in the doctor's form.
       const existingDoctorUsername = await Doctor.findOne({ username: userData.username });
       if (existingDoctorUsername) {
           return res.status(400).json({ message: 'Username is already in use ' });
       }
-
-      // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل في نموذج المريض
+      // Check if the username already exists in the patient's form.
       const existingPatientUsername = await Patient.findOne({ username: userData.username });
       if (existingPatientUsername) {
           return res.status(400).json({ message: 'Username is already in use ' });
       }
-
-      // // تحقق مما إذا كان اسم المستخدم موجودًا بالفعل
-      // const existingUser = await Model.findOne({
-      //     $or: [{ username: userData.username }],
-      // });
-
-      // if (existingUser) {
-      //     return res.status(400).json({ message: 'Username already exists' });
-      // }
-
-      // إنشاء المستخدم
+      // Create the user
       const user = new Model(userData);
       await user.save();
-
-      // توليد التوكن
+      // Generate the token
       const token = jwt.sign({ id: user.id, role }, process.env.JWT_SECRET, {
           expiresIn: process.env.JWT_EXPIRES_IN,
       });

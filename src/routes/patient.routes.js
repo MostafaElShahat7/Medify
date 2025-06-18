@@ -14,6 +14,7 @@ const {
   getFavorites,
   removeFromFavorites
 } = require("../controllers/patient.controller");
+
 const { getAllPosts } = require("../controllers/doctor.controller");
 
 // All routes require authentication and patient role

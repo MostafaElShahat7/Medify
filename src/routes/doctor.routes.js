@@ -20,13 +20,13 @@ const {
   getAllPosts
 } = require("../controllers/doctor.controller");
 
-// Add this new route BEFORE the authentication middleware
+
 router.get("/public-profile/:doctorId", getDoctorPublicProfile);
 
-// Add new route for doctor availability by ID (public)
+
 router.get("/availability/:doctorId", getDoctorAvailabilityById);
 
-// Add new public route for getting all social posts
+
 router.get("/social-posts", getAllPosts);
 
 // Configure multer to store files in memory with basic settings
