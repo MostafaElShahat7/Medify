@@ -207,6 +207,10 @@ const updateAppointment = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
+    if (req.user.role === 'doctor' && appointment.doctorId.toString() !== (req.user._id ? req.user._id.toString() : req.user._doc._id.toString())) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
     if (appointment.status === 'CANCELLED') {
       return res.status(400).json({ 
         message: 'Cannot update a cancelled appointment' 

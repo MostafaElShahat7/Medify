@@ -39,4 +39,7 @@ router.patch("/:id",
   updateAppointment
 );
 
+// Doctor-specific endpoint to update appointment status (cancel/complete)
+router.patch('/doctor/:id/status', authenticateDoctor, authorize('doctor'), updateAppointment);
+
 module.exports = router;
