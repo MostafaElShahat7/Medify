@@ -51,6 +51,10 @@ const patientSchema = new mongoose.Schema({
   heartRate: Number,
   bmi: Number,
   resetToken: String,
+  otp: {
+    code: String,
+    expiresAt: Date
+  },
   medicalHistory: [{
     type: {
       type: String,
