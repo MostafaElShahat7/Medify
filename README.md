@@ -114,7 +114,7 @@ Import the Postman collection (`Medify.postman_collection.json`) and environment
 ## Project Structure
 
 ```
-src/
+<!-- src/
 ├── config/         # Configuration files (Firebase, Prisma, Upload, Logging)
 ├── controllers/    # Request handlers for all API endpoints
 ├── middleware/     # Custom middleware (Auth, Error handling)
@@ -122,7 +122,7 @@ src/
 ├── routes/         # API route definitions
 ├── services/       # Business logic and external service integrations
 ├── utils/          # Utility functions (Auth, Email, JWT, Validation)
-└── validators/     # Request validation schemas
+└── validators/     # Request validation schemas -->
 ```
 
 ## Database Schema
