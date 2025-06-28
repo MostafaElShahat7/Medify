@@ -1,4 +1,5 @@
 const yup = require('yup');
+const { isValidTimeFormat } = require('../utils/time.util');
 
 const doctorSchema = yup.object({
   specialization: yup.string(),
@@ -12,10 +13,10 @@ const doctorSchema = yup.object({
         .oneOf(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
         .required('Day is required'),
       startTime: yup.string()
-        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
+        .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', isValidTimeFormat)
         .required('Start time is required'),
       endTime: yup.string()
-        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
+        .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', isValidTimeFormat)
         .required('End time is required')
     })
   )
@@ -24,14 +25,14 @@ const doctorSchema = yup.object({
 const availabilitySchema = yup.object({
   availability: yup.array().of(
     yup.object({
-      day: yup.string()
-        .oneOf(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+      dayOfWeek: yup.string()
+        .oneOf(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'])
         .required('Day is required'),
       startTime: yup.string()
-        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
+        .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', isValidTimeFormat)
         .required('Start time is required'),
       endTime: yup.string()
-        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format')
+        .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', isValidTimeFormat)
         .required('End time is required')
     })
   ).required('Availability is required')

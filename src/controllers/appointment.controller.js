@@ -3,6 +3,12 @@ const Doctor = require('../models/doctor.model');
 const { appointmentSchema, updateAppointmentSchema } = require('../validators/appointment.validator');
 const NotificationService = require('../services/notification.service');
 const Patient = require('../models/patient.model');
+const { 
+  convert12To24Hour, 
+  convertTimeToMinutes, 
+  addMinutesToTime, 
+  isTimeWithinRange 
+} = require('../utils/time.util');
 
 
 const createAppointment = async (req, res) => {
@@ -23,7 +29,8 @@ const createAppointment = async (req, res) => {
     }
 
     // التحقق من أن التاريخ في المستقبل
-    const appointmentDateTime = new Date(`${date}T${time}`);
+    const time24 = convert12To24Hour(time);
+    const appointmentDateTime = new Date(`${date}T${time24}`);
     const now = new Date();
 
     if (appointmentDateTime < now) {
@@ -47,7 +54,7 @@ const createAppointment = async (req, res) => {
 
     // تحويل الوقت إلى دقائق للمقارنة
     const appointmentTimeInMinutes = convertTimeToMinutes(time);
-    const appointmentEndTimeInMinutes = appointmentTimeInMinutes + 60; // مدة الموعد ساعة واحدة
+    const appointmentEndTimeInMinutes = appointmentTimeInMinutes + 60;
 
     // التحقق من تداخل المواعيد
     const hasConflict = availableSlot.bookedSlots?.some(bookedSlot => {
@@ -103,31 +110,6 @@ const createAppointment = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-};
-
-// convirt time into minutes
-const convertTimeToMinutes = (time) => {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-};
-
-
-const addMinutesToTime = (time, minutesToAdd) => {
-  let [hours, minutes] = time.split(':').map(Number);
-  minutes += minutesToAdd;
-  hours += Math.floor(minutes / 60);
-  minutes = minutes % 60;
-  hours = hours % 24;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
-
-const isTimeWithinRange = (time, startTime, endTime) => {
-  const timeInMinutes = convertTimeToMinutes(time);
-  const startInMinutes = convertTimeToMinutes(startTime);
-  const endInMinutes = convertTimeToMinutes(endTime);
-
-  return timeInMinutes >= startInMinutes && timeInMinutes < endInMinutes;
 };
 
 const getAppointments = async (req, res) => {
@@ -245,7 +227,8 @@ const updateAppointment = async (req, res) => {
     }
 
     if (req.body.date || req.body.time) {
-      const newDateTime = new Date(`${req.body.date || appointment.date}T${req.body.time || appointment.time}`);
+      const time24 = req.body.time ? convert12To24Hour(req.body.time) : convert12To24Hour(appointment.time);
+      const newDateTime = new Date(`${req.body.date || appointment.date}T${time24}`);
       const now = new Date();
 
       if (newDateTime < now) {

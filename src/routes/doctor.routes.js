@@ -17,7 +17,8 @@ const {
   deletePost,
   getDoctorPublicProfile,
   getDoctorAvailabilityById,
-  getAllPosts
+  getAllPosts,
+  getAvailableTimeSlots
 } = require("../controllers/doctor.controller");
 
 
@@ -26,8 +27,8 @@ router.get("/public-profile/:doctorId", getDoctorPublicProfile);
 
 router.get("/availability/:doctorId", getDoctorAvailabilityById);
 
-
-router.get("/social-posts", getAllPosts);
+// Get available time slots for a doctor on a specific date
+router.get("/availability/:doctorId/slots/:date", getAvailableTimeSlots);
 
 // Configure multer to store files in memory with basic settings
 const upload = multer({

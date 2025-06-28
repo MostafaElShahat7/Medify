@@ -91,18 +91,29 @@ const updateAvailability = async (req, res) => {
   const availability = req.body.availability;
 
   try {
+    // Validate availability data
+    await availabilitySchema.validate({ availability });
+
     const result = await Doctor.updateOne(
       { _id: doctorId },
       { $set: { availability } }
     );
+    
     if (result.nModified === 0) {
       return res.status(404).send("Doctor not found or no changes made.");
     }
+    
     res.status(200).json({
-      message: "Availability updated successfully For " + doctorId,
-      availability: Doctor.availability,
+      message: "Availability updated successfully for " + doctorId,
+      availability: availability,
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: "Validation error",
+        errors: error.errors
+      });
+    }
     res.status(500).send("Error updating availability: " + error.message);
   }
 };
@@ -468,6 +479,63 @@ const getAllPosts = async (req, res) => {
   }
 };
 
+// Get available time slots for a doctor on a specific day
+const getAvailableTimeSlots = catchAsync(async (req, res) => {
+  const { doctorId, date } = req.params;
+  
+  try {
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    const appointmentDate = new Date(date);
+    const dayOfWeek = appointmentDate.toLocaleString('en-US', { weekday: 'long' }).toUpperCase();
+    
+    const availableSlot = doctor.availability.find(slot => slot.dayOfWeek === dayOfWeek);
+    
+    if (!availableSlot) {
+      return res.status(200).json({
+        message: "Doctor is not available on this day",
+        availableSlots: []
+      });
+    }
+
+    // Get all time slots between start and end time
+    const { getTimeSlots, convert24To12Hour } = require('../utils/time.util');
+    const allSlots = getTimeSlots(availableSlot.startTime, availableSlot.endTime, 60);
+    
+    // Filter out booked slots
+    const bookedSlots = availableSlot.bookedSlots || [];
+    const availableSlots = allSlots.filter(slot => {
+      return !bookedSlots.some(bookedSlot => {
+        const { isTimeWithinRange } = require('../utils/time.util');
+        return isTimeWithinRange(slot, bookedSlot.startTime, bookedSlot.endTime);
+      });
+    });
+
+    // Convert to 12-hour format for display
+    const formattedSlots = availableSlots.map(slot => ({
+      time: convert24To12Hour(slot),
+      time24: slot
+    }));
+
+    res.status(200).json({
+      doctorId: doctor._id,
+      doctorName: doctor.name,
+      date: date,
+      dayOfWeek: dayOfWeek,
+      availableSlots: formattedSlots,
+      totalSlots: formattedSlots.length
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error retrieving available time slots", 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = {
   createDoctorProfile,
   getDoctorProfile,
@@ -480,5 +548,6 @@ module.exports = {
   deletePost,
   getDoctorPublicProfile,
   getDoctorAvailabilityById,
-  getAllPosts
+  getAllPosts,
+  getAvailableTimeSlots
 };
