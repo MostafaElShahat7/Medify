@@ -536,6 +536,44 @@ const getAvailableTimeSlots = catchAsync(async (req, res) => {
   }
 });
 
+// Upload doctor verification image
+const uploadVerificationImage = async (req, res) => {
+  try {
+    const doctorId = req.user._id || req.user._doc?._id;
+    if (!doctorId) {
+      return res.status(400).json({ message: "Doctor ID not found" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file uploaded" });
+    }
+    const timestamp = Date.now();
+    const uniqueFilename = `verification-${doctorId}-${timestamp}-${req.file.originalname}`;
+    const blob = await put(uniqueFilename, req.file.buffer, {
+      access: 'public',
+      addRandomSuffix: true
+    });
+    // Update doctor profile with verification image URL
+    const doctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      { verificationImage: blob.url },
+      { new: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    res.status(200).json({
+      message: "Verification image uploaded successfully",
+      verificationImage: blob.url
+    });
+  } catch (error) {
+    console.error("Error uploading verification image:", error);
+    res.status(500).json({
+      message: "Error uploading verification image",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createDoctorProfile,
   getDoctorProfile,
@@ -549,5 +587,6 @@ module.exports = {
   getDoctorPublicProfile,
   getDoctorAvailabilityById,
   getAllPosts,
-  getAvailableTimeSlots
+  getAvailableTimeSlots,
+  uploadVerificationImage
 };

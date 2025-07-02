@@ -18,7 +18,8 @@ const {
   getDoctorPublicProfile,
   getDoctorAvailabilityById,
   getAllPosts,
-  getAvailableTimeSlots
+  getAvailableTimeSlots,
+  uploadVerificationImage
 } = require("../controllers/doctor.controller");
 
 
@@ -80,5 +81,13 @@ router.post("/posts",
 
 router.put("/posts/:id", authorize("doctor"), upload.single('image'), updatePost);
 router.delete("/posts/:id", authorize("doctor"), deletePost);
+
+// Verification image upload
+router.post(
+  "/verification-image",
+  authorize("doctor"),
+  upload.single('image'),
+  uploadVerificationImage
+);
 
 module.exports = router;

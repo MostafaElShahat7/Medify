@@ -83,6 +83,10 @@ const doctorSchema = new mongoose.Schema(
       code: String,
       expiresAt: Date
     },
+    verificationImage: {
+      type: String,
+      default: null
+    },
   },
   {
     timestamps: true,
