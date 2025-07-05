@@ -179,8 +179,9 @@ const createPost = async (req, res) => {
     // Get the doctor name for the response
     const doctor = await Doctor.findById(doctorId).select('name');
     
-    // Create a new object with the populated post data
+    // Create a new object with the populated post data (excluding likes)
     const populatedPost = newPost.toObject();
+    delete populatedPost.likes; // Remove likes field from response
     populatedPost.doctorName = doctor ? doctor.name : 'Unknown';
     
     // Format the date to be more readable
@@ -293,8 +294,9 @@ const updatePost = async (req, res) => {
     // Get the doctor name for the response
     const doctor = await Doctor.findById(doctorId).select('name');
     
-    // Create a new object with the populated post data
+    // Create a new object with the populated post data (excluding likes)
     const populatedPost = post.toObject();
+    delete populatedPost.likes; // Remove likes field from response
     populatedPost.doctorName = doctor ? doctor.name : 'Unknown';
 
     // Format the date to be more readable
@@ -377,7 +379,7 @@ const getDoctorPublicProfile = catchAsync(async (req, res) => {
 
   const posts = await Post.find({ doctorId: doctorId })
     .sort({ createdAt: -1 })
-    .select("content image createdAt likes");
+    .select("content image createdAt");
 
   // Add the doctor name to each post
   const postsWithDoctorName = posts.map(post => {
@@ -436,9 +438,10 @@ const getAllPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate('doctorId', 'name specialty profilePicture');
     
-    // Format posts with doctor information
+    // Format posts with doctor information (excluding likes)
     const formattedPosts = posts.map(post => {
       const formattedPost = post.toObject();
+      delete formattedPost.likes; // Remove likes field from response
       
       // Add doctor information
       if (post.doctorId) {

@@ -47,4 +47,4 @@ const medicalRecordSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("MedicalRecord", medicalRecordSchema);
+module.exports = mongoose.model("MedicalRecord", medicalRecordSchema, "medicalrecords");

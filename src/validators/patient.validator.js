@@ -10,6 +10,22 @@ const patientSchema = yup.object({
   bloodType: yup.string()
     .oneOf(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
   allergies: yup.array().of(yup.string()),
+  bmi: yup.number().required('BMI is required'),
+  smoking: yup.boolean().required('Smoking status is required'),
+  alcoholDrinking: yup.boolean().required('Alcohol drinking status is required'),
+  stroke: yup.boolean().required('Stroke status is required'),
+  physicalHealth: yup.number().min(0).max(30).required('Physical health days are required'),
+  mentalHealth: yup.number().min(0).max(30).required('Mental health days are required'),
+  diffWalking: yup.boolean().required('Difficulty walking status is required'),
+  ageCategory: yup.string().required('Age category is required'),
+  race: yup.string().required('Race is required'),
+  diabetic: yup.string().oneOf(['Yes', 'No', 'Borderline diabetes']).required('Diabetic status is required'),
+  physicalActivity: yup.boolean().required('Physical activity status is required'),
+  genHealth: yup.string().oneOf(['Excellent', 'Very good', 'Good', 'Fair', 'Poor']).required('General health is required'),
+  sleepTime: yup.number().min(0).max(24).required('Sleep time is required'),
+  asthma: yup.boolean().required('Asthma status is required'),
+  kidneyDisease: yup.boolean().required('Kidney disease status is required'),
+  skinCancer: yup.boolean().required('Skin cancer status is required'),
   // emergencyContact: yup.object({
   //   name: yup.string()
   //   .required('Emergency contact name is required'),

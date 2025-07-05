@@ -49,7 +49,7 @@ const patientSchema = new mongoose.Schema({
     ref: 'User'
 },
   heartRate: Number,
-  bmi: Number,
+  bmi: { type: Number, required: true },
   resetToken: String,
   otp: {
     code: String,
@@ -77,7 +77,22 @@ const patientSchema = new mongoose.Schema({
   favoriteDoctors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor'
-  }]
+  }],
+  smoking: { type: Boolean, default: false,required: true },
+  alcoholDrinking: { type: Boolean, default: false,required: true },
+  stroke: { type: Boolean, default: false,required: true },
+  physicalHealth: { type: Number, min: 0, max: 30,required: true },
+  mentalHealth: { type: Number, min: 0, max: 30,required: true },
+  diffWalking: { type: Boolean, default: false,required: true },
+  ageCategory: { type: String, required: true },
+  race: { type: String, required: true }, 
+  diabetic: { type: String, enum: ['Yes', 'No', 'Borderline diabetes'],required: true },
+  physicalActivity: { type: Boolean, default: false,required: true },
+  genHealth: { type: String, enum: ['Excellent', 'Very good', 'Good', 'Fair', 'Poor'],required: true },
+  sleepTime: { type: Number, min: 0, max: 24,required: true },
+  asthma: { type: Boolean, default: false,required: true },
+  kidneyDisease: { type: Boolean, default: false,required: true },
+  skinCancer: { type: Boolean, default: false,required: true }
 }, {
   timestamps: true
 });
@@ -92,4 +107,4 @@ patientSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('Patient', patientSchema);
+module.exports = mongoose.model('Patient', patientSchema, 'patients');

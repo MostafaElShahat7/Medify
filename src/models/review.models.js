@@ -28,4 +28,4 @@ const reviewSchema = new mongoose.Schema({
 // Ensure one review per doctor-patient combination
 reviewSchema.index({ doctorId: 1, patientId: 1 }, { unique: true });
 
-module.exports = mongoose.model('Review', reviewSchema);
+module.exports = mongoose.model('Review', reviewSchema, 'reviews');

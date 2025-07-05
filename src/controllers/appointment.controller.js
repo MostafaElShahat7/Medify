@@ -171,13 +171,17 @@ const getAppointments = async (req, res) => {
 
 const updateAppointment = async (req, res) => {
   try {
-    if (!req.body.status) {
+    // التحقق من وجود بيانات للتحديث
+    if (!req.body.status && !req.body.date && !req.body.time && !req.body.notes) {
       return res.status(400).json({ 
-        message: 'Status is required' 
+        message: 'At least one field is required: status, date, time, or notes' 
       });
     }
 
-    req.body.status = req.body.status.toUpperCase();
+    // إذا تم تمرير status، تحقق من صحته
+    if (req.body.status) {
+      req.body.status = req.body.status.toUpperCase();
+    }
     
     await updateAppointmentSchema.validate(req.body);
     const appointment = await Appointment.findById(req.params.id);
@@ -199,7 +203,7 @@ const updateAppointment = async (req, res) => {
       });
     }
 
-    if (appointment.status === 'COMPLETED' && (req.body.date || req.body.time || req.body.status === 'CANCELLED')) {
+    if (appointment.status === 'COMPLETED' && (req.body.date || req.body.time || (req.body.status && req.body.status === 'CANCELLED'))) {
       return res.status(400).json({ 
         message: 'Completed appointments can only be updated with notes' 
       });
@@ -226,8 +230,22 @@ const updateAppointment = async (req, res) => {
       }
     }
 
-    if (req.body.date || req.body.time) {
-      const time24 = req.body.time ? convert12To24Hour(req.body.time) : convert12To24Hour(appointment.time);
+    // تحديث التاريخ والوقت فقط إذا تم تمريرهما بشكل صريح
+    const appointmentDateStr = appointment.date.toISOString().split('T')[0]; // تحويل إلى YYYY-MM-DD
+    const isDateChanged = req.body.date && req.body.date !== appointmentDateStr;
+    const isTimeChanged = req.body.time && req.body.time !== appointment.time;
+    
+    // تحديث التاريخ والوقت فقط إذا تم تمريرهما وتغييرهما
+    if (isDateChanged || isTimeChanged) {
+      // تأكد من وجود وقت صالح
+      const timeToUse = req.body.time || appointment.time;
+      if (!timeToUse) {
+        return res.status(400).json({ 
+          message: 'Time is required when updating appointment date or time' 
+        });
+      }
+      
+      const time24 = convert12To24Hour(timeToUse);
       const newDateTime = new Date(`${req.body.date || appointment.date}T${time24}`);
       const now = new Date();
 
@@ -311,8 +329,9 @@ const updateAppointment = async (req, res) => {
 
       await doctor.save();
       
-      if (req.body.date) appointment.date = req.body.date;
-      if (req.body.time) appointment.time = newTime;
+      // تحديث البيانات فقط إذا تم تمريرها
+      if (isDateChanged) appointment.date = req.body.date;
+      if (isTimeChanged) appointment.time = newTime;
     }
 
     if (req.body.notes) {
@@ -321,10 +340,20 @@ const updateAppointment = async (req, res) => {
 
     await appointment.save();
 
+    // إرسال إشعار مناسب حسب نوع التحديث
+    let notificationMessage = 'Your appointment has been updated';
+    if (req.body.status) {
+      notificationMessage = `Your appointment has been ${appointment.status}`;
+    } else if (req.body.date || req.body.time) {
+      notificationMessage = 'Your appointment has been rescheduled';
+    } else if (req.body.notes) {
+      notificationMessage = 'Your appointment notes have been updated';
+    }
+
     await NotificationService.sendPushNotification(
       appointment.patientId,
       'Appointment Update',
-      `Your appointment has been ${appointment.status}`
+      notificationMessage
     );
 
     res.json({

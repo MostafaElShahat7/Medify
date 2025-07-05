@@ -421,10 +421,30 @@
           }
         },
         {
-          "name": "Get Appointments",
+          "name": "Get Patient Appointments",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/appointments",
+            "url": "{{baseUrl}}/api/appointments/patient",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/doctor",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/patient",
             "headers": {
               "Authorization": "Bearer {{token}}"
             },
@@ -434,24 +454,181 @@
           }
         },
         {
-          "name": "Update Appointment",
+          "name": "Get Completed Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/patient",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "status": "COMPLETED"
+            }
+          }
+        },
+        {
+          "name": "Get Cancelled Appointments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/patient",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "status": "CANCELLED"
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Status (Patient)",
           "request": {
             "method": "PATCH",
             "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
             "headers": {
-              "Authorization": "Bearer {{token}}"
+              "Authorization": "Bearer {{token}}",
+              "x-user-type": "patient"
             },
             "body": {
               "mode": "raw",
               "raw": {
-                "status": "COMPLETED",
-                "notes": "Patient showed improvement"
+                "status": "CANCELLED",
+                "notes": "I need to reschedule due to emergency"
               },
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            }
+          }
+        },
+        {
+          "name": "Reschedule Appointment (Patient)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}",
+              "x-user-type": "patient"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "date": "2025-05-02",
+                "time": "2:30 PM",
+                "notes": "Rescheduled to afternoon slot"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Notes (Patient)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}",
+              "x-user-type": "patient"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "notes": "I have new symptoms to discuss with the doctor"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Status (Doctor)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}",
+              "x-user-type": "doctor"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "COMPLETED",
+                "notes": "Patient showed improvement, prescribed medication"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment (Doctor)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}",
+              "x-user-type": "doctor"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "CANCELLED",
+                "notes": "Doctor unavailable due to emergency"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Search Appointments by Date Range",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/appointments",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "startDate": "2025-04-01",
+              "endDate": "2025-04-30",
+              "status": "UPCOMING"
+            }
+          }
+        },
+        {
+          "name": "Search Appointments by Status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/appointments",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "status": "COMPLETED"
+            }
+          }
+        },
+        {
+          "name": "Get Available Time Slots",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctors/{{doctorId}}/availability/{{date}}/slots",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
             }
           }
         }
@@ -461,7 +638,7 @@
       "name": "Messages",
       "item": [
         {
-          "name": "Send Message",
+          "name": "Send Text Message (Patient to Doctor)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/messages",
@@ -471,8 +648,8 @@
             "body": {
               "mode": "raw",
               "raw": {
-                "receiverId": "{{receiverId}}",
-                "content": "Hello, I have a question about my prescription"
+                "receiverId": "{{doctorId}}",
+                "content": "Hello Dr. Smith, I have a question about my prescription. Can you please clarify the dosage instructions?"
               },
               "options": {
                 "raw": {
@@ -483,7 +660,125 @@
           }
         },
         {
-          "name": "Get Conversations",
+          "name": "Send Text Message (Doctor to Patient)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{patientId}}",
+                "content": "Hello John, I've reviewed your test results. Everything looks good. Please continue with your current medication as prescribed."
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send Message with File Attachment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "receiverId",
+                  "value": "{{receiverId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Please find attached my latest test results for your review.",
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Appointment Question",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{doctorId}}",
+                "content": "Hi Doctor, I need to reschedule my appointment for next week. Is there any available slot on Tuesday or Wednesday?"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send Medical Question",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{doctorId}}",
+                "content": "Doctor, I've been experiencing some side effects from the medication. Should I stop taking it or continue? Please advise."
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send Follow-up Question",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{patientId}}",
+                "content": "Hello, this is a follow-up on your treatment. How are you feeling? Any improvement in your symptoms?"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Conversations (Doctor)",
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/api/messages/conversations",
@@ -493,12 +788,108 @@
           }
         },
         {
-          "name": "Get Messages",
+          "name": "Get Conversations (Patient)",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/messages/{{userId}}",
+            "url": "{{baseUrl}}/api/messages/conversations",
             "headers": {
               "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Messages with Specific User (Doctor)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/messages/{{patientId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Messages with Specific User (Patient)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/messages/{{doctorId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Unread Messages Count",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/messages/unread",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Send Emergency Message",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{doctorId}}",
+                "content": "URGENT: I'm experiencing severe chest pain and shortness of breath. Should I go to the emergency room?"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send Prescription Question",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{doctorId}}",
+                "content": "I forgot to take my medication this morning. Should I take it now or wait until the next scheduled dose?"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Send Test Results Question",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/messages",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "receiverId": "{{doctorId}}",
+                "content": "I received my blood test results. Can you please explain what the elevated cholesterol levels mean and what I should do?"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         }
@@ -567,7 +958,7 @@
       "name": "Medical Records",
       "item": [
         {
-          "name": "Create Medical Report",
+          "name": "Create Medical Report (Checkup)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/medical-records/reports",
@@ -578,13 +969,33 @@
               "mode": "formdata",
               "formdata": [
                 {
+                  "key": "patientId",
+                  "value": "{{patientId}}",
+                  "type": "text"
+                },
+                {
                   "key": "diagnosis",
-                  "value": "Influenza",
+                  "value": "Hypertension",
                   "type": "text"
                 },
                 {
                   "key": "symptoms",
-                  "value": ["fever", "cough"],
+                  "value": "high blood pressure, headache, dizziness",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "checkup",
+                  "type": "text"
+                },
+                {
+                  "key": "treatment",
+                  "value": "Lifestyle modifications and medication",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "Patient needs regular monitoring",
                   "type": "text"
                 },
                 {
@@ -597,7 +1008,143 @@
           }
         },
         {
-          "name": "Create Prescription",
+          "name": "Create Medical Report (Emergency)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "patientId",
+                  "value": "{{patientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "diagnosis",
+                  "value": "Acute Appendicitis",
+                  "type": "text"
+                },
+                {
+                  "key": "symptoms",
+                  "value": "severe abdominal pain, nausea, fever",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "emergency",
+                  "type": "text"
+                },
+                {
+                  "key": "treatment",
+                  "value": "Emergency surgery required",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "Immediate surgical intervention needed",
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Medical Report (Follow-up)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "patientId",
+                  "value": "{{patientId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "diagnosis",
+                  "value": "Diabetes Management",
+                  "type": "text"
+                },
+                {
+                  "key": "symptoms",
+                  "value": "improved blood sugar control, weight loss",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "follow-up",
+                  "type": "text"
+                },
+                {
+                  "key": "treatment",
+                  "value": "Continue current medication and diet",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "Patient showing good progress",
+                  "type": "text"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Medical Reports (Doctor)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Medical Reports (Patient)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/medical-records/reports",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Search Medical Records",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/medical-records",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "params": {
+              "diagnosis": "diabetes",
+              "type": "follow-up",
+              "startDate": "2025-01-01",
+              "endDate": "2025-12-31"
+            }
+          }
+        },
+        {
+          "name": "Create Prescription (Single Medication)",
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/medical-records/prescriptions",
@@ -617,8 +1164,179 @@
                     "instructions": "Take with food"
                   }
                 ],
-                "notes": "Complete the full course",
-                "validUntil": "2024-01-22T00:00:00.000Z"
+                "notes": "Complete the full course of antibiotics",
+                "validUntil": "2025-08-05T00:00:00.000Z"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Prescription (Multiple Medications)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "patientId": "{{patientId}}",
+                "medications": [
+                  {
+                    "name": "Metformin",
+                    "dosage": "500mg",
+                    "frequency": "twice daily",
+                    "duration": "ongoing",
+                    "instructions": "Take with meals"
+                  },
+                  {
+                    "name": "Lisinopril",
+                    "dosage": "10mg",
+                    "frequency": "once daily",
+                    "duration": "ongoing",
+                    "instructions": "Take in the morning"
+                  },
+                  {
+                    "name": "Atorvastatin",
+                    "dosage": "20mg",
+                    "frequency": "once daily",
+                    "duration": "ongoing",
+                    "instructions": "Take at bedtime"
+                  }
+                ],
+                "notes": "Monitor blood sugar and blood pressure regularly",
+                "validUntil": "2025-12-31T00:00:00.000Z"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Prescription (Pain Management)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "patientId": "{{patientId}}",
+                "medications": [
+                  {
+                    "name": "Ibuprofen",
+                    "dosage": "400mg",
+                    "frequency": "every 6 hours as needed",
+                    "duration": "5 days",
+                    "instructions": "Take with food, do not exceed 4 doses per day"
+                  },
+                  {
+                    "name": "Acetaminophen",
+                    "dosage": "500mg",
+                    "frequency": "every 4-6 hours as needed",
+                    "duration": "5 days",
+                    "instructions": "Do not take with other pain medications"
+                  }
+                ],
+                "notes": "Use only for severe pain, rest and ice recommended",
+                "validUntil": "2025-07-20T00:00:00.000Z"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Prescriptions (Doctor)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Get Prescriptions (Patient)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            }
+          }
+        },
+        {
+          "name": "Update Prescription (Complete)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions/{{prescriptionId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "completed",
+                "notes": "Patient completed the full course successfully"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Prescription (Cancel)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions/{{prescriptionId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "cancelled",
+                "notes": "Patient allergic to medication, alternative prescribed"
+              },
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Prescription (Active)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/medical-records/prescriptions/{{prescriptionId}}",
+            "headers": {
+              "Authorization": "Bearer {{token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "active",
+                "notes": "Prescription reactivated for continued treatment"
               },
               "options": {
                 "raw": {

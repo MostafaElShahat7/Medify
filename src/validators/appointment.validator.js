@@ -16,12 +16,17 @@ const appointmentSchema = yup.object({
 const updateAppointmentSchema = yup.object({
   status: yup.string()
     .oneOf(['UPCOMING', 'COMPLETED', 'CANCELLED'])
-    .required('Status is required'),
+    .optional(),
   date: yup.date()
     .min(new Date(), 'Appointment date must be in the future'),
   time: yup.string()
-    .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', isValidTimeFormat),
+    .optional()
+    .test('time-format', 'Invalid time format. Use format like "2:30 PM" or "14:30"', value => {
+      if (!value) return true;
+      return isValidTimeFormat(value);
+    }),
   notes: yup.string()
+    .optional()
 });
 
 module.exports = {

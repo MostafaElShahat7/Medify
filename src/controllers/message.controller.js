@@ -27,7 +27,7 @@ const sendMessage = async (req, res) => {
     }
 
     const message = new Message({
-      senderId: req.user._doc._id,
+      senderId: req.user._id,
       senderModel,
       receiverId,
       receiverModel,
@@ -60,7 +60,7 @@ const sendMessage = async (req, res) => {
 
 const getConversations = async (req, res) => {
   try {
-    const userId = req.user._doc._id;
+    const userId = req.user._id;
     const userModel = req.user.role === 'doctor' ? 'Doctor' : 'Patient';
 
     const conversations = await Message.aggregate([
@@ -133,7 +133,7 @@ const getConversations = async (req, res) => {
 const getMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-    const currentUserId = req.user._doc._id;
+    const currentUserId = req.user._id;
     const currentUserModel = req.user.role === 'doctor' ? 'Doctor' : 'Patient';
 
     const messages = await Message.find({
@@ -174,7 +174,7 @@ const getMessages = async (req, res) => {
 const getUnreadCount = async (req, res) => {
   try {
     const count = await Message.countDocuments({
-      receiverId: req.user._doc._id,
+      receiverId: req.user._id,
       receiverModel: req.user.role === 'doctor' ? 'Doctor' : 'Patient',
       read: false
     });
