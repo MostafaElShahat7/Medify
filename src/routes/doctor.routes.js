@@ -21,6 +21,7 @@ const {
   getAvailableTimeSlots,
   uploadVerificationImage
 } = require("../controllers/doctor.controller");
+const { getPatientProfileById } = require("../controllers/patient.controller");
 
 
 router.get("/public-profile/:doctorId", getDoctorPublicProfile);
@@ -70,6 +71,7 @@ router.post("/availability", authorize("doctor"), updateAvailability);
 
 // Patient management
 router.get("/patients", authorize("doctor"), getDoctorPatients);
+router.get("/patient-profile/:patientId", authorize("doctor"), getPatientProfileById);
 
 // Posts management
 router.post("/posts", 

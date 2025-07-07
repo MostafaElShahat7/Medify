@@ -178,6 +178,20 @@ const removeFromFavorites = async (req, res) => {
   }
 };
 
+const getPatientProfileById = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    // Exclude password field
+    const patient = await Patient.findById(patientId).select('-password').populate('userId');
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+    res.status(200).json(patient);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving patient profile: " + error.message });
+  }
+};
+
 module.exports = {
   createPatientProfile,
   getPatientProfile,
@@ -186,5 +200,6 @@ module.exports = {
   getMedicalHistory,
   addToFavorites,
   getFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  getPatientProfileById
 };

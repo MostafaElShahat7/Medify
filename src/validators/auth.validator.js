@@ -20,7 +20,14 @@ const registerSchema = yup.object({
   },
   role: yup.string()
     .oneOf(['admin', 'doctor', 'patient'], 'Invalid role')
-    .required('Role is required')
+    .required('Role is required'),
+  phone: yup.string()
+    .matches(/^\+?[0-9]{10,15}$/, 'Invalid phone number')
+    .when('role', {
+      is: 'doctor',
+      then: (schema) => schema.required('Phone number is required for doctors'),
+      otherwise: (schema) => schema.notRequired()
+    }),
 });
 
 const loginSchema = yup.object({
