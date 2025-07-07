@@ -64,8 +64,10 @@ const authenticateAdmin = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token, process.env.JWT_SECRET);
+    console.log("[ADMIN AUTH] Decoded token:", decoded);
 
     const user = await Admin.findById(decoded.id);
+    console.log("[ADMIN AUTH] Admin user found:", user);
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }

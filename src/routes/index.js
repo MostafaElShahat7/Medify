@@ -8,6 +8,7 @@ const patientRoutes = require('./patient.routes');
 const doctorRoutes = require('./doctor.routes');
 const searchRoutes = require('./search.routes');
 const reviewRoutes = require('./review.routes');
+const adminRoutes = require('./admin.routes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -37,5 +38,8 @@ router.use('/reviews', reviewRoutes);
 
 //search Routes
 router.use('/search', searchRoutes);
+
+// Admin routes
+router.use('/admin', adminRoutes);
 
 module.exports = router;
