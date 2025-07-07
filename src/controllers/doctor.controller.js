@@ -577,6 +577,44 @@ const uploadVerificationImage = async (req, res) => {
   }
 };
 
+// Upload doctor profile picture
+const uploadProfilePicture = async (req, res) => {
+  try {
+    const doctorId = req.user._id || req.user._doc?._id;
+    if (!doctorId) {
+      return res.status(400).json({ message: "Doctor ID not found" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file uploaded" });
+    }
+    const timestamp = Date.now();
+    const uniqueFilename = `profile-${doctorId}-${timestamp}-${req.file.originalname}`;
+    const blob = await put(uniqueFilename, req.file.buffer, {
+      access: 'public',
+      addRandomSuffix: true
+    });
+    // Update doctor profile with profile picture URL
+    const doctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      { profilePicture: blob.url },
+      { new: true }
+    );
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    res.status(200).json({
+      message: "Profile picture uploaded successfully",
+      profilePicture: blob.url
+    });
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    res.status(500).json({
+      message: "Error uploading profile picture",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createDoctorProfile,
   getDoctorProfile,
@@ -591,5 +629,6 @@ module.exports = {
   getDoctorAvailabilityById,
   getAllPosts,
   getAvailableTimeSlots,
-  uploadVerificationImage
+  uploadVerificationImage,
+  uploadProfilePicture,
 };

@@ -19,7 +19,8 @@ const {
   getDoctorAvailabilityById,
   getAllPosts,
   getAvailableTimeSlots,
-  uploadVerificationImage
+  uploadVerificationImage,
+  uploadProfilePicture
 } = require("../controllers/doctor.controller");
 const { getPatientProfileById } = require("../controllers/patient.controller");
 
@@ -90,6 +91,14 @@ router.post(
   authorize("doctor"),
   upload.single('image'),
   uploadVerificationImage
+);
+
+// Profile picture upload
+router.post(
+  "/profile-picture",
+  authorize("doctor"),
+  upload.single('image'),
+  uploadProfilePicture
 );
 
 module.exports = router;

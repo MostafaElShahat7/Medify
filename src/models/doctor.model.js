@@ -92,6 +92,10 @@ const doctorSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    profilePicture: {
+      type: String,
+      default: null
+    },
   },
   {
     timestamps: true,
