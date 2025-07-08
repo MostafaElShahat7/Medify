@@ -54,4 +54,17 @@ exports.deleteAccountById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting account', error });
   }
+};
+
+// 4. Get own admin profile
+exports.getOwnProfile = async (req, res) => {
+  try {
+    // req.user is set by authenticateAdmin middleware
+    const adminId = req.user._id.toString();
+    const admin = await Admin.findOne({ _id: adminId }).select('-password -resetToken');
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+    res.json(admin);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching admin profile', error });
+  }
 }; 

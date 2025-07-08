@@ -9,6 +9,9 @@ router.get('/counts', authenticateAdmin, adminController.getCounts);
 // Get private profile by ID (type: patient/doctor)
 router.get('/profile/:type/:id', authenticateAdmin, adminController.getProfileById);
 
+// Get own admin profile
+router.get('/profile', authenticateAdmin, adminController.getOwnProfile);
+
 // Delete any account by ID (type: patient/doctor/admin)
 router.delete('/account/:type/:id', authenticateAdmin, adminController.deleteAccountById);
 

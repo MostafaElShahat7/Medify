@@ -72,10 +72,9 @@ const authenticateAdmin = async (req, res, next) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = {
-      ...user,
-      role: "admin"
-    };
+    // Ensure req.user is a plain object with all fields
+    req.user = user.toObject ? user.toObject() : user;
+    req.user.role = "admin";
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
