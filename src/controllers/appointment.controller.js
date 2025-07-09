@@ -227,6 +227,13 @@ const updateAppointment = async (req, res) => {
           );
           await doctor.save();
         }
+        // Send email notification to patient
+        const Patient = require('../models/patient.model');
+        const { sendEmail } = require('../utils/email.util');
+        const patient = await Patient.findById(appointment.patientId);
+        if (patient && patient.email) {
+          await sendEmail(patient.email, 'Appointment Cancelled', 'Your appointment was canceled by the doctor for some reason, you can reschedule it later or contact the doctor for more information , thank you for your understanding.');
+        }
       }
     }
 

@@ -63,6 +63,9 @@ const updateDoctorProfile = catchAsync(async (req, res) => {
       return res.status(404).send("Doctor not found.");
     }
     res.status(200).json(result);
+    // Send email notification
+    const { sendEmail } = require('../utils/email.util');
+    await sendEmail(result.email, 'Profile Updated', 'Your profile has been updated successfully.');
   } catch (error) {
     res.status(500).send("Error updating profile: " + error.message);
   }

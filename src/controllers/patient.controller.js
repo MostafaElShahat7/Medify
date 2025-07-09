@@ -68,6 +68,9 @@ const updatePatientProfile = async (req, res) => {
         message: "Profile Updated successfully",
         data: result
       }); 
+      // Send email notification
+      const { sendEmail } = require('../utils/email.util');
+      await sendEmail(result.email, 'Profile Updated', 'Your profile has been updated successfully.');
   } catch (error) {
       res.status(500).send("Error updating profile: " + error.message);
   }
