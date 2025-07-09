@@ -4,6 +4,7 @@ const multer = require("multer");
 const {
   authenticateDoctor,
   authorize,
+  authenticateUser,
 } = require("../middleware/auth.middleware");
 const {
   createMedicalReport,
@@ -27,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // All routes require authentication
-router.use(authenticateDoctor);
+router.use(authenticateUser);
 
 // Medical Reports routes (doctors only for creation)
 router.post(

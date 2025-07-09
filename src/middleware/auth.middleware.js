@@ -81,6 +81,37 @@ const authenticateAdmin = async (req, res, next) => {
   }
 };
 
+const authenticateUser = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token, process.env.JWT_SECRET);
+
+    let user = await Doctor.findById(decoded.id);
+    if (user) {
+      req.user = user;
+      req.user.role = "doctor";
+      return next();
+    }
+
+    user = await Patient.findById(decoded.id);
+    if (user) {
+      req.user = user;
+      req.user.role = "patient";
+      return next();
+    }
+
+    return res.status(401).json({ message: "User not found" });
+  } catch (error) {
+    console.error("Authentication error:", error);
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 const authorize = (...roles) => {
   return (req, res, next) => {
     console.log("--------------------------------------------");
@@ -100,5 +131,6 @@ module.exports = {
   authenticateDoctor,
   authenticatePatient,
   authenticateAdmin,
-  authorize
+  authorize,
+  authenticateUser
 };
