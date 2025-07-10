@@ -25,7 +25,7 @@ const searchDoctors = catchAsync(async (req, res) => {
     console.log('MongoDB Query:', query);
 
     const doctors = await Doctor.find(query)
-      .select('name specialization rating clinicName clinicAddress experienceYears')
+      .select('name specialization rating clinicName clinicAddress experienceYears profilePicture')
       .sort({ rating: -1 });
 
     if (!doctors || doctors.length === 0) {
