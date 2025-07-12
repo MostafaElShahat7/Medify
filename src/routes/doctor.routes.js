@@ -23,6 +23,7 @@ const {
   uploadProfilePicture
 } = require("../controllers/doctor.controller");
 const { getPatientProfileById } = require("../controllers/patient.controller");
+const { getPatientAppointments, getPatientAllAppointments } = require("../controllers/appointment.controller");
 
 
 router.get("/public-profile/:doctorId", getDoctorPublicProfile);
@@ -73,6 +74,8 @@ router.post("/availability", authorize("doctor"), updateAvailability);
 // Patient management
 router.get("/patients", authorize("doctor"), getDoctorPatients);
 router.get("/patient-profile/:patientId", authorize("doctor"), getPatientProfileById);
+router.get("/patient-appointments/:patientId", authorize("doctor"), getPatientAppointments);
+router.get("/patient-all-appointments/:patientId", authorize("doctor"), getPatientAllAppointments);
 
 // Posts management
 router.post("/posts", 

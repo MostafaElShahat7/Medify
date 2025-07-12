@@ -16,6 +16,7 @@ const {
 } = require("../controllers/patient.controller");
 
 const { getAllPosts } = require("../controllers/doctor.controller");
+const { getAppointments } = require("../controllers/appointment.controller");
 
 // All routes require authentication and patient role
 router.use(authenticatePatient);
@@ -34,6 +35,9 @@ router.get("/medical-history", getMedicalHistory);
 router.post('/favorites/:doctorId', addToFavorites);
 router.get('/favorites', getFavorites);
 router.delete('/favorites/:doctorId', removeFromFavorites);
+
+// Appointments route - direct access for patients
+router.get('/appointments', getAppointments);
 
 // Social posts route
 router.get('/social-posts', getAllPosts);

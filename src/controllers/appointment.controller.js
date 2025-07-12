@@ -373,9 +373,107 @@ const updateAppointment = async (req, res) => {
   }
 };
 
+const getPatientAppointments = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const doctorId = req.user._id || (req.user._doc && req.user._doc._id);
+
+    if (!doctorId) {
+      console.error('Doctor ID not found in user object:', req.user);
+      return res.status(400).json({ message: 'Doctor ID not found' });
+    }
+
+    // التحقق من أن المريض موجود
+    const Patient = require('../models/patient.model');
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // البحث عن المواعيد التي يملكها هذا المريض مع هذا الدكتور
+    const appointments = await Appointment.find({
+      patientId: patientId,
+      doctorId: doctorId
+    })
+      .populate('doctorId', 'name specialization')
+      .populate('patientId', 'name')
+      .sort({ date: 1 });
+
+    console.log(`Found ${appointments.length} appointments for patient ${patientId} with doctor ${doctorId}`);
+    
+    // تنظيم المواعيد حسب الحالة
+    const upcomingAppointments = appointments.filter(app => app.status === 'UPCOMING');
+    const completedAppointments = appointments.filter(app => app.status === 'COMPLETED');
+    const cancelledAppointments = appointments.filter(app => app.status === 'CANCELLED');
+    
+    // إرجاع المواعيد منظمة في مصفوفات منفصلة
+    res.json({
+      patient: {
+        id: patient._id,
+        name: patient.name,
+        email: patient.email
+      },
+      appointments: {
+        upcoming: upcomingAppointments,
+        completed: completedAppointments,
+        cancelled: cancelledAppointments
+      }
+    });
+  } catch (error) {
+    console.error('Error in getPatientAppointments:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getPatientAllAppointments = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    // التحقق من أن المريض موجود
+    const Patient = require('../models/patient.model');
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // البحث عن جميع المواعيد التي يملكها هذا المريض مع أي دكتور
+    const appointments = await Appointment.find({
+      patientId: patientId
+    })
+      .populate('doctorId', 'name specialization')
+      .populate('patientId', 'name')
+      .sort({ date: 1 });
+
+    console.log(`Found ${appointments.length} total appointments for patient ${patientId}`);
+    
+    // تنظيم المواعيد حسب الحالة
+    const upcomingAppointments = appointments.filter(app => app.status === 'UPCOMING');
+    const completedAppointments = appointments.filter(app => app.status === 'COMPLETED');
+    const cancelledAppointments = appointments.filter(app => app.status === 'CANCELLED');
+    
+    // إرجاع المواعيد منظمة في مصفوفات منفصلة
+    res.json({
+      patient: {
+        id: patient._id,
+        name: patient.name,
+        email: patient.email
+      },
+      appointments: {
+        upcoming: upcomingAppointments,
+        completed: completedAppointments,
+        cancelled: cancelledAppointments
+      }
+    });
+  } catch (error) {
+    console.error('Error in getPatientAllAppointments:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   createAppointment,
   getAppointments,
-  updateAppointment
+  updateAppointment,
+  getPatientAppointments,
+  getPatientAllAppointments
 };
